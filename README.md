@@ -1,5 +1,6 @@
 # 使用方法
 安装nginx+php
+
 修改api/api.php文件第54行为你的反代域名
 # nginx配置
 ```
