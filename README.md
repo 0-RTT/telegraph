@@ -1,4 +1,10 @@
 # 使用方法
+
+⚠️需要网络能够访问telegraph
+
+## docker
+```docker run -p 8080:80 -d --restart=always baipiaoo/telegraph```
+## 服务器
 安装nginx+php
 
 将文件上传到网站目录，访问域名即可！
