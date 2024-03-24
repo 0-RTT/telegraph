@@ -1,7 +1,6 @@
 # 使用方法
 安装nginx+php
 
-修改api/api.php文件第54行为你的反代域名
 # nginx配置
 ```
     location /upload {
@@ -11,9 +10,6 @@
                 if ($request_method = 'OPTIONS') {
                 	return 204;}
                 proxy_pass https://telegra.ph/upload;
-    }
-    location /file {
-                proxy_pass https://telegra.ph/file;
     }
 ```
 
