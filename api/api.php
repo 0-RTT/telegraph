@@ -51,8 +51,8 @@ if ($fileSize > $maxSize) {
 // 调用upload_image函数上传图片
 $imgpath = upload_image($filepath, $fileType, $file);
 if ($imgpath) {
-  $domains = ['missuo.ru', 'im.gurl.eu.org', 'img.199881.xyz', 'img.188000.xyz', 'img.xiaowangye.org'];
-  $image_host = 'https://i'.rand(0, 3).'.wp.com/'. $domains[array_rand($domains)];
+$domains = ['im.gurl.eu.org', 'img.199881.xyz', 'img.188000.xyz'];
+$image_host = 'https://'. $domains[array_rand($domains)];
   $result = array(
     "code" => 200,
     "msg" => "上传成功",
