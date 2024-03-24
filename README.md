@@ -1,3 +1,7 @@
+# 上传的图片大于5MB自动压缩
+
+# 修改api/api.php文件第54行为你的反代域名
+
 # nginx配置
 ```
     location /upload {
@@ -12,4 +16,4 @@
                 proxy_pass https://telegra.ph/file;
     }
 ```
-# 修改api/api.php文件第54行为你的反代域名
+
