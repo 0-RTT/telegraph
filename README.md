@@ -3,7 +3,8 @@
 ⚠️需要网络能够访问telegraph
 
 ### docker
-```docker pull baipiaoo/telegraph:latest``
+```docker pull baipiaoo/telegraph:latest```
+
 ```docker run -p 8080:80 -d --restart=always baipiaoo/telegraph```
 
 ###### nginx 反代配置
