@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0,viewport-fit=cover">
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.4/axios.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue-clipboard2/0.3.3/vue-clipboard.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.3/theme-chalk/index.css">
+<script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.3/index.js"></script>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<style>
+/* 全局样式 */
+body {
+  background: #f1f1f1;
+}
+
+/* 默认样式，适用于PC端（大于等于1200px宽度） */
+.container {
+  width: 50%;
+  margin: 30px auto 0;
+  background: #fff;
+  border-radius: 10px;
+  padding-bottom: 10px;
+}
+
+.el-dialog {
+  width: 30%;
+}
+
+/* 媒体查询，适用于PAD端（768px - 1199px宽度） */
+@media screen and (min-width: 768px) and (max-width: 1199px) {
+  .container {
+    width: 80%;
+    border-radius: 10px;
+  }
+  
+  .el-dialog {
+    width: 30%;
+  }
+}
+
+/* 媒体查询，适用于手机端（小于768px宽度） */
+@media screen and (max-width: 767px) {
+  .container {
+    width: 90%;
+    border-radius: 10px;
+  }
+  
+  .el-dialog {
+    width: 80%;
+  }
+}
+
+/* 标题样式 */
+.h2 {
+  font-size: 35px;
+  font-weight: 400;
+  text-align: center;
+  line-height: 100px;
+  margin-bottom: 10px;
+}
+
+/* 按钮组样式 */
+.container .button-group {
+  width: calc(100% - 60px);
+  padding: 30px;
+  padding-top: 0;
+}
+
+/* 错误提示样式 */
+.upload-error {
+  width: calc(100% - 60px);
+  padding: 30;
+  margin: 15px auto 20px;
+}
+
+
+/* 输出类型按钮样式 */
+.output-types button {
+  display: inline-block;
+  background-color: #f8f9fa;
+  border: none;
+  border-radius: 4px;
+  color: #6e7687;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 10px;
+  padding: 8px 12px;
+  transition: all 0.2s ease-in-out;
+  margin-left: 2px;
+}
+
+.output-types button.selected {
+  background-color: #6772e5;
+  color: #fff;
+}
+
+/* 上传图片样式 */
+.upload-demo {
+  border-radius: 4px;
+  color: #6e7687;
+  font-size: 14px;
+  margin: 0 auto;
+  margin-top: 10px;
+  padding: 12px;
+  resize: none;
+  width: 100%;
+}
+
+.el-upload {
+  width: 100%;
+}
+
+.el-upload-dragger {
+  width: 100%;
+}
+
+/* 输出链接样式 */
+.output-link textarea {
+  background-color: #f8f9fa;
+  border: none;
+  height: 80px;
+  border-radius: 4px;
+  color: #6e7687;
+  font-size: 14px;
+  margin: 10px 2px; /* 上边距保持10px，左右边距设置为2px */
+  padding: 12px;
+  resize: none;
+  width: calc(100% - 4px); /* 总宽度减去左右各2px的边距 */
+  box-sizing: border-box; /* 确保宽度包括padding和border */
+  display: block;
+}
+
+
+/* 复制/清空按钮样式 */
+.output-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.output-buttons button {
+  background-color: #f8f9fa;
+  border: none;
+  border-radius: 4px;
+  color: #6e7687;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 10px;
+  padding: 8px 12px;
+  transition: all 0.2s ease-in-out;
+}
+
+.output-buttons button:hover {
+  background-color: #6772e5;
+  color: #fff;
+}
+
+
+/* API标题样式 */
+.api-title {
+  font-size: 16px;
+  font-weight: normal;
+  margin-bottom: 10px;
+}
+
+/* 隐藏v-cloak样式 */
+[v-cloak] {
+  display: none;
+}
+
+</style>
+        
+</head>
+<body>
+<div id="app" v-cloak>
+  <div class="container">
+    <!--网页标题-->
+    <title>{{ webtitle }}</title>
+    <!--大标题-->
+    <p class="h2">{{ webtitle }}</p>
+  
+    <!--API接口-->
+    <div class="button-group">
+
+      <el-upload class="output-link" :action="`./api/${selectedApi}.php`" :auto-upload="true" drag :on-success="handleSuccess" :on-error="handleError">
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div> 
+      </el-upload>
+
+      <br>
+
+      <!--输出链接-->
+      <div class="output-types">
+        <button v-for="type in outputTypes" :key="type.key" @click="selectLinkType(type)" :class="{ 'selected': currentOutputType === type.key }">{{ type.title }}</button> 
+
+        <div class="output-link">
+          <textarea class="form-control" id="output" v-model="result" rows="8" placeholder=""></textarea>
+ 
+          <div class="output-buttons">
+            <button class="btn btn-sm btn-outline-light reset-btn" @click="reset"><em class="icon el-icon-delete"></em>清除</button>
+            <button class="btn btn-sm btn-outline-light copy-btn" @click="copy"><em class="icon el-icon-document-copy"></em>复制</button>
+          </div>
+          
+        <p style="font-size: 10px; text-align: center;">
+          <span id="num"></span><br>
+          当前IP：<span id="ip"></span><br>
+          请遵守相关法律法规，合理使用本站资源！
+        </p>
+      </div>
+
+      <div class="upload-error" v-if="error">
+        <el-alert
+          title="上传失败"
+          type="error"
+          :description="msg"
+          show-icon
+        ></el-alert>
+      </div>
+    </div>
+  </div>
+ </div>
+  </div>
+<script>
+new Vue({
+  el: "#app",
+  data: {
+    webtitle: "图床",
+    selectedApi: "api", // 默认选中的API，无需用户选择
+    url: false,
+    error: false,
+    msg: "",
+    outputTypes: [
+      {
+        title: 'Markdown',
+        key: 'Markdown',
+        template: '![image](#url#)',
+      },
+      {
+        title: 'BBCode',
+        key: 'BBCode',
+        template: '[img]#url#[/img]',
+      },
+      {
+        title: 'URL',
+        key: 'URL',
+        template: '#url#',
+      }
+    ],
+    currentOutputType: 'Markdown',
+    result: '',
+    clipboard: null,
+  },
+
+  mounted() {
+    const script = document.createElement('script');
+    script.onload = () => {
+      console.log('clipboard.js loaded');
+    };
+    document.head.appendChild(script);
+  },
+
+  methods: {
+    selectApi(api) {
+      this.selectedApi = api;
+    },
+
+    handleSuccess(response, file) {
+      console.log("请求成功", response);
+      if (response.code == 200) {
+        this.url = response.url;
+        this.generateResult();
+      } else {
+        this.url = false;
+        this.error = true;
+        this.msg = response.msg;
+      }
+    },
+
+    handleError(err, file) {
+      console.error("上传失败", err);
+      this.url = false;
+      this.error = true;
+      this.msg = this.selectedApi + ".php" + "服务器发生错误！";
+    },
+
+    generateResult() {
+      if (!this.url) {
+        return;
+      }
+
+      const currentOutputType = this.outputTypes.find(v => v.key === this.currentOutputType) || this.outputTypes[0];
+      this.result = currentOutputType.template.replace(/#url#/g, this.url);
+      this.convertLink();
+    },
+
+    convertLink() {
+      const selectedType = this.outputTypes.find(type => type.key === this.currentOutputType);
+      if (selectedType) {
+        let link = selectedType.template.replace(/#url#/g, this.url);
+        this.result = this.url ? link : '';
+      }
+    },
+
+    copy() {
+      if (this.result) {
+        if (!this.clipboard) {
+          this.clipboard = new ClipboardJS(".copy-btn", {
+            text: () => this.result,
+          });
+        }
+        this.clipboard.onClick(event);
+        const copyBtn = document.querySelector('.copy-btn');
+        copyBtn.textContent = "已复制";
+        setTimeout(() => {
+          copyBtn.textContent = "复制";
+
+        }, 500);
+      }
+    },
+
+reset() {
+  if (!this.result) {
+    return;
+  }
+  this.url = false;
+  this.error = false;
+  this.msg = "";
+  this.currentOutputType = 'Markdown';
+  this.result = '';
+  if (this.clipboard) {
+    this.clipboard.destroy();
+    this.clipboard = null;
+  }
+  const resetBtn = document.querySelector('.reset-btn');
+  resetBtn.textContent = "已清除"; 
+  setTimeout(() => {
+    resetBtn.textContent = "清除"; 
+
+  }, 500);
+},
+
+    selectLinkType(type) {
+      this.currentOutputType = type.key;
+      this.convertLink();
+    },
+  },
+});
+
+// 获取访问者IP
+fetch('https://www.cloudflare.com/cdn-cgi/trace')
+  .then(response => response.text())
+  .then(data => {
+    const ip = data.match(/(?:ip=)(.*)/)[1];
+    document.getElementById('ip').textContent = ip;
+  });
+
+
+</script>
+
+</body>
+
+</html>
