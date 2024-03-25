@@ -56,6 +56,7 @@ if ($imgpath) {
     $full_url = $image_host . $imgpath; // 完整的图片URL
 
     $currentTime = date("Y-m-d H:i:s"); // 获取当前时间
+    $clientIP = $_SERVER['REMOTE_ADDR']; // 获取客户端IP地址
 
     $result = array(
       "code" => 200,
@@ -64,8 +65,8 @@ if ($imgpath) {
       "timestamp" => $currentTime // 可以选择在结果中包含时间戳
     );
 
-    // 将URL和时间戳写入到文件中
-    $logLine = $full_url . " | " . $currentTime . "\n"; // 创建要写入的字符串，包含URL和当前时间
+    // 将IP地址、URL和时间戳写入到文件中
+    $logLine = $clientIP . ", " . $full_url . ", " . $currentTime . "\n"; // 创建要写入的字符串，包含IP地址、URL和当前时间
     file_put_contents('urls.txt', $logLine, FILE_APPEND); // 写入文件
 } else {
     $result = array(
@@ -73,6 +74,7 @@ if ($imgpath) {
       "msg" => "图片上传失败！请检查接口可用性！"
     );
 }
+
 
 
 // 输出结果
