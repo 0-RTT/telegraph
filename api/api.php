@@ -51,18 +51,23 @@ if ($fileSize > $maxSize) {
 // 调用upload_image函数上传图片
 $imgpath = upload_image($filepath, $fileType, $file);
 if ($imgpath) {
-$domains = ['img.199881.xyz','img.188000.xyz','pic.dig77.com','pic.51.yt','img.selipoi.top','image.misdazzling.cn'];
-$image_host = 'https://'. $domains[array_rand($domains)];
-  $result = array(
-    "code" => 200,
-    "msg" => "上传成功",
-    "url" => $image_host . $imgpath
-  );
+    $domains = ['img.199881.xyz','img.188000.xyz','pic.dig77.com','pic.51.yt','img.selipoi.top','image.misdazzling.cn'];
+    $image_host = 'https://'. $domains[array_rand($domains)];
+    $full_url = $image_host . $imgpath; // 完整的图片URL
+
+    $result = array(
+      "code" => 200,
+      "msg" => "上传成功",
+      "url" => $full_url
+    );
+
+    // 将URL写入到文件中
+    file_put_contents('urls.txt', $full_url."\n", FILE_APPEND);
 } else {
-  $result = array(
-    "code" => 201,
-    "msg" => "图片上传失败！请检查接口可用性！"
-  );
+    $result = array(
+      "code" => 201,
+      "msg" => "图片上传失败！请检查接口可用性！"
+    );
 }
 
 // 输出结果
