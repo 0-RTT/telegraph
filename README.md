@@ -27,6 +27,9 @@
 #### 使用自己的反代域名
 修改api/api.php文件第54行为你的反代域名
 
+```$domains = ['img.199881.xyz','img.188000.xyz','pic.dig77.com','pic.51.yt','img.selipoi.top','image.misdazzling.cn'];```
+
+```$domains = ['改为你的反代域名'];```
 ###### nginx 配置
 ```
 location /file {
