@@ -20,9 +20,7 @@
 ### 服务器
 安装nginx+php
 
-将文件上传到网站目录，访问域名即可！
-
-[点击下载代码](https://mirror.ghproxy.com/github.com/0-RTT/telegraph/archive/refs/tags/v1.0.zip)
+下载源码，将文件上传到网站目录，访问域名即可！
 
 #### 使用自己的反代域名
 修改api/api.php文件第54行为你的反代域名
