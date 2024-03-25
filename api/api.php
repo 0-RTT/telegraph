@@ -55,20 +55,25 @@ if ($imgpath) {
     $image_host = 'https://'. $domains[array_rand($domains)];
     $full_url = $image_host . $imgpath; // 完整的图片URL
 
+    $currentTime = date("Y-m-d H:i:s"); // 获取当前时间
+
     $result = array(
       "code" => 200,
       "msg" => "上传成功",
-      "url" => $full_url
+      "url" => $full_url,
+      "timestamp" => $currentTime // 可以选择在结果中包含时间戳
     );
 
-    // 将URL写入到文件中
-    file_put_contents('urls.txt', $full_url."\n", FILE_APPEND);
+    // 将URL和时间戳写入到文件中
+    $logLine = $full_url . " | " . $currentTime . "\n"; // 创建要写入的字符串，包含URL和当前时间
+    file_put_contents('urls.txt', $logLine, FILE_APPEND); // 写入文件
 } else {
     $result = array(
       "code" => 201,
       "msg" => "图片上传失败！请检查接口可用性！"
     );
 }
+
 
 // 输出结果
 outputResult($result);
