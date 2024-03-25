@@ -51,7 +51,7 @@ if ($fileSize > $maxSize) {
 // 调用upload_image函数上传图片
 $imgpath = upload_image($filepath, $fileType, $file);
 if ($imgpath) {
-    $domains = ['img.199881.xyz','img.188000.xyz','pic.dig77.com','pic.51.yt','img.selipoi.top','image.misdazzling.cn'];
+    $domains = ['img.selipoi.top','picture.atago.moe'];
     $image_host = 'https://'. $domains[array_rand($domains)];
     $full_url = $image_host . $imgpath; // 完整的图片URL
 
@@ -66,7 +66,7 @@ if ($imgpath) {
     );
 
     // 将IP地址、URL和时间戳写入到文件中
-    $logLine = $clientIP . ", " . $full_url . ", " . $currentTime . "\n"; // 创建要写入的字符串，包含IP地址、URL和当前时间
+    $logLine = $currentTime . ", " . $clientIP . ", " . $full_url . "\n"; // 创建要写入的字符串，包含IP地址、URL和当前时间
     file_put_contents('urls.txt', $logLine, FILE_APPEND); // 写入文件
 } else {
     $result = array(
