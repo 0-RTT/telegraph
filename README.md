@@ -1,6 +1,6 @@
-⚠️需要网络能够访问telegraph
+⚠️图片储存在telegraph
 
-⚠️图片上传后，请及时保存链接且无法删除
+⚠️需要网络能够访问telegraph
 
 # 特点
 图片储存在telegraph
