@@ -1,5 +1,3 @@
-⚠️图片储存在telegraph
-
 ⚠️需要网络能够访问telegraph
 
 # 特点
