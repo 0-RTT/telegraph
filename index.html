@@ -274,13 +274,16 @@ new Vue({
     },
 
     handleSuccess(response, file) {
-      console.log("请求成功", response);
       if (response.code == 200) {
+        console.log("请求成功", response);
         this.url = response.url;
-      } else {
+        this.error = false;
+        this.msg = '';
+      } else if (response.code == 201) {
+        console.log("错误", response);
         this.url = false;
         this.error = true;
-        this.msg = response.msg;
+        this.msg = response.msg; // 使用后端返回的错误信息
       }
     },
 
