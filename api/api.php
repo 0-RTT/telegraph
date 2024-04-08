@@ -8,47 +8,49 @@ class ImageUploader
 
     public function upload()
     {
+        $errors = [];
+
         if (!isset($_FILES["file"])) {
-            $this->outputResult(["code" => 201, "msg" => "没有上传文件！"]);
-            exit;
+            $errors[] = "没有上传文件！";
         }
 
         $file = $_FILES["file"]["name"];
         $fileType = $_FILES["file"]["type"];
         if (!in_array($fileType, $this->allowedTypes)) {
-            $this->outputResult(["code" => 201, "msg" => "只允许上传gif、jpeg、jpg、png格式的图片文件！"]);
-            exit;
+            $errors[] = "只允许上传gif、jpeg、jpg、png格式的图片文件！";
         }
 
         $fileSize = $_FILES["file"]["size"];
+        $filepath = $_FILES["file"]["tmp_name"];
+        
         if ($fileType == "image/gif") {
             if ($fileSize > $this->maxSize) {
-                $this->outputResult(["code" => 201, "msg" => "GIF文件超过5MB，无法上传！"]);
-                exit;
+                $errors[] = "GIF文件超过5MB，无法上传！";
+            } else {
+                $imgpath = $this->upload_image($filepath, $fileType, $file);
             }
-            // GIF 文件且未超过 5MB，直接上传
-            $filepath = $_FILES["file"]["tmp_name"];
         } else {
             if ($fileSize > $this->maxSize) {
                 $compressedImage = $this->compress_image($_FILES["file"]);
                 if (!$compressedImage) {
-                    $this->outputResult(["code" => 201, "msg" => "图片压缩失败或图片超过5MB！"]);
-                    exit;
+                    $errors[] = "图片压缩失败！";
                 }
                 $fileType = $compressedImage['type'];
                 $fileSize = $compressedImage['size'];
                 $filepath = $compressedImage['tmp_name'];
-            } else {
-                $filepath = $_FILES["file"]["tmp_name"];
             }
+            $imgpath = $this->upload_image($filepath, $fileType, $file);
         }
 
-        $imgpath = $this->upload_image($filepath, $fileType, $file);
-        if ($imgpath) {
+        if (isset($imgpath) && $imgpath) {
             $image_host = 'https://' . $this->domains[array_rand($this->domains)];
-            $this->outputResult(["code" => 200, "msg" => "上传成功", "url" => $image_host . $imgpath]);
-        } else {
-            $this->outputResult(["code" => 201, "msg" => "Telegraph不支持该格式"]);
+            $this->outputSuccess("上传成功", $image_host . $imgpath);
+        } elseif (!in_array("GIF文件超过5MB，无法上传！", $errors)) {
+            $errors[] = "Telegraph不支持该格式";
+        }
+
+        if (!empty($errors)) {
+            $this->outputError(implode(' ', $errors));
         }
     }
 
@@ -83,6 +85,16 @@ class ImageUploader
     {
         header("Content-type: application/json");
         echo json_encode($result, JSON_UNESCAPED_UNICODE);
+    }
+
+    private function outputError($msg)
+    {
+        $this->outputResult(["code" => 201, "msg" => $msg]);
+    }
+
+    private function outputSuccess($msg, $url)
+    {
+        $this->outputResult(["code" => 200, "msg" => $msg, "url" => $url]);
     }
 
     private function upload_image($filepath, $fileType, $fileName)
