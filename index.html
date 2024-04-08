@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
     <meta name="description" content="高效稳定的图床服务，支持大于5MB图片上传，基于Telegraph的图床解决方案。">
     <meta name="keywords" content="图床, Telegra.ph, 图片上传, 高效, 稳定, 大文件支持">
-    <title>基于Telegraph的图床服务</title>
+    <title>图床-基于Telegraph的图床服务</title>
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.3/theme-chalk/index.css">
     <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.min.js"></script>
@@ -161,14 +161,6 @@ body {
   color: #fff;
 }
 
-
-/* API标题样式 */
-.api-title {
-  font-size: 16px;
-  font-weight: normal;
-  margin-bottom: 10px;
-}
-
 /* 隐藏v-cloak样式 */
 [v-cloak] {
   display: none;
@@ -207,7 +199,7 @@ body {
           
         <p style="font-size: 10px; text-align: center;">
           <span id="num"></span><br>
-          当前IP：<span id="ip"></span><br>
+          当前IP：<span v-text="ip"></span><br>
           请遵守相关法律法规，合理使用本站资源！
           <br>项目开源于 GitHub - <a href="https://github.com/0-RTT/telegraph" target="_blank" rel="noopener noreferrer">0-RTT/telegraph</a>
         </p>
@@ -223,15 +215,15 @@ body {
       </div>
     </div>
   </div>
- </div>
- </div>
+</div>
+</div>
 
 <script>
 new Vue({
   el: "#app",
   data: {
     webtitle: "图床",
-    selectedApi: "api", // 默认选中的API，无需用户选择
+    selectedApi: "api",
     url: false,
     error: false,
     msg: "",
@@ -253,11 +245,22 @@ new Vue({
       }
     ],
     currentOutputType: 'Markdown',
-    result: '',
     clipboard: null,
+    ip: '',
+  },
+
+  computed: {
+    result() {
+      if (!this.url) {
+        return '';
+      }
+      const selectedType = this.outputTypes.find(type => type.key === this.currentOutputType);
+      return selectedType ? selectedType.template.replace(/#url#/g, this.url) : '';
+    },
   },
 
   mounted() {
+    this.getVisitorIP();
     const script = document.createElement('script');
     script.onload = () => {
       console.log('clipboard.js loaded');
@@ -274,7 +277,6 @@ new Vue({
       console.log("请求成功", response);
       if (response.code == 200) {
         this.url = response.url;
-        this.generateResult();
       } else {
         this.url = false;
         this.error = true;
@@ -289,24 +291,6 @@ new Vue({
       this.msg = this.selectedApi + ".php" + "服务器发生错误！";
     },
 
-    generateResult() {
-      if (!this.url) {
-        return;
-      }
-
-      const currentOutputType = this.outputTypes.find(v => v.key === this.currentOutputType) || this.outputTypes[0];
-      this.result = currentOutputType.template.replace(/#url#/g, this.url);
-      this.convertLink();
-    },
-
-    convertLink() {
-      const selectedType = this.outputTypes.find(type => type.key === this.currentOutputType);
-      if (selectedType) {
-        let link = selectedType.template.replace(/#url#/g, this.url);
-        this.result = this.url ? link : '';
-      }
-    },
-
     copy() {
       if (this.result) {
         if (!this.clipboard) {
@@ -319,46 +303,43 @@ new Vue({
         copyBtn.textContent = "已复制";
         setTimeout(() => {
           copyBtn.textContent = "复制";
-
         }, 500);
       }
     },
 
-reset() {
-  if (!this.result) {
-    return;
-  }
-  this.url = false;
-  this.error = false;
-  this.msg = "";
-  this.currentOutputType = 'Markdown';
-  this.result = '';
-  if (this.clipboard) {
-    this.clipboard.destroy();
-    this.clipboard = null;
-  }
-  const resetBtn = document.querySelector('.reset-btn');
-  resetBtn.textContent = "已清除"; 
-  setTimeout(() => {
-    resetBtn.textContent = "清除"; 
-
-  }, 500);
-},
+    reset() {
+      if (!this.result) {
+        return;
+      }
+      this.url = false;
+      this.error = false;
+      this.msg = "";
+      this.currentOutputType = 'Markdown';
+      if (this.clipboard) {
+        this.clipboard.destroy();
+        this.clipboard = null;
+      }
+      const resetBtn = document.querySelector('.reset-btn');
+      resetBtn.textContent = "已清除"; 
+      setTimeout(() => {
+        resetBtn.textContent = "清除"; 
+      }, 500);
+    },
 
     selectLinkType(type) {
       this.currentOutputType = type.key;
-      this.convertLink();
+    },
+
+    getVisitorIP() {
+      fetch('https://www.cloudflare.com/cdn-cgi/trace')
+        .then(response => response.text())
+        .then(data => {
+          this.ip = data.match(/(?:ip=)(.*)/)[1];
+        });
     },
   },
 });
 
-// 获取访问者IP
-fetch('https://www.cloudflare.com/cdn-cgi/trace')
-  .then(response => response.text())
-  .then(data => {
-    const ip = data.match(/(?:ip=)(.*)/)[1];
-    document.getElementById('ip').textContent = ip;
-  });
 
 
 </script>
