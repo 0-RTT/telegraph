@@ -14,7 +14,7 @@
 #### 使用自己的反代域名
 修改api/api.php文件第7行为你的反代域名
 
-``` private $domains = ['img.selipoi.top', 'picture.atago.moe'];```
+```private $domains = ['img.selipoi.top', 'picture.atago.moe'];```
 
 ```private $domains = ['你的反代域名'];;```
 ###### nginx 配置
