@@ -12,11 +12,11 @@
 下载源码，将文件上传到网站目录，访问域名即可！
 
 #### 使用自己的反代域名
-修改api/api.php文件第54行为你的反代域名
+修改api/api.php文件第7行为你的反代域名
 
-```$domains = ['img.199881.xyz','img.188000.xyz','pic.dig77.com','pic.51.yt','img.selipoi.top','image.misdazzling.cn'];```
+``` private $domains = ['img.selipoi.top', 'picture.atago.moe'];```
 
-```$domains = ['改为你的反代域名'];```
+```private $domains = ['你的反代域名'];;```
 ###### nginx 配置
 ```
 location /file {
