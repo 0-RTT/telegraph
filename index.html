@@ -173,7 +173,7 @@ body {
 <div id="app" v-cloak>
   <div class="container">
     <!--大标题-->
-    <p class="h2">{{ webtitle }}</p>
+    <p class="h2">JIASU.IN</p>
   
     <!--API接口-->
     <div class="button-group">
@@ -193,15 +193,11 @@ body {
           <textarea class="form-control" id="output" v-model="result" rows="8" placeholder=""></textarea>
  
           <div class="output-buttons">
-            <button class="btn btn-sm btn-outline-light reset-btn" @click="reset"><em class="icon el-icon-delete"></em>清除</button>
             <button class="btn btn-sm btn-outline-light copy-btn" @click="copy"><em class="icon el-icon-document-copy"></em>复制</button>
           </div>
           
         <p style="font-size: 10px; text-align: center;">
-          <span id="num"></span><br>
-          当前IP：<span v-text="ip"></span><br>
-          请遵守相关法律法规，合理使用本站资源！
-          <br>项目开源于 GitHub - <a href="https://github.com/0-RTT/telegraph" target="_blank" rel="noopener noreferrer">0-RTT/telegraph</a>
+          项目开源于 GitHub - <a href="https://github.com/0-RTT/telegraph" target="_blank" rel="noopener noreferrer">0-RTT/telegraph</a>
         </p>
       </div>
 
@@ -222,7 +218,6 @@ body {
 new Vue({
   el: "#app",
   data: {
-    webtitle: "图床",
     selectedApi: "api",
     url: false,
     error: false,
@@ -246,7 +241,6 @@ new Vue({
     ],
     currentOutputType: 'Markdown',
     clipboard: null,
-    ip: '',
   },
 
   computed: {
@@ -260,7 +254,6 @@ new Vue({
   },
 
   mounted() {
-    this.getVisitorIP();
     const script = document.createElement('script');
     script.onload = () => {
       console.log('clipboard.js loaded');
@@ -310,40 +303,11 @@ new Vue({
       }
     },
 
-    reset() {
-      if (!this.result) {
-        return;
-      }
-      this.url = false;
-      this.error = false;
-      this.msg = "";
-      this.currentOutputType = 'Markdown';
-      if (this.clipboard) {
-        this.clipboard.destroy();
-        this.clipboard = null;
-      }
-      const resetBtn = document.querySelector('.reset-btn');
-      resetBtn.textContent = "已清除"; 
-      setTimeout(() => {
-        resetBtn.textContent = "清除"; 
-      }, 500);
-    },
-
     selectLinkType(type) {
       this.currentOutputType = type.key;
     },
-
-    getVisitorIP() {
-      fetch('https://www.cloudflare.com/cdn-cgi/trace')
-        .then(response => response.text())
-        .then(data => {
-          this.ip = data.match(/(?:ip=)(.*)/)[1];
-        });
-    },
   },
 });
-
-
 
 </script>
 
