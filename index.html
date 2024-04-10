@@ -11,127 +11,89 @@
     <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.4/axios.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.3/index.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Long+Cang&display=swap');
-    </style>
+
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Long+Cang&display=swap');
+
+:root {
+  --primary-bg-color: #f1f1f1;
+  --box-shadow-color: rgba(0,0,0,0.1);
+  --text-shadow-color: rgba(0,0,0,0.3);
+  --button-bg-color: #f8f9fa;
+  --button-border-color: #dcdfe6;
+  --button-selected-bg-color: #6772e5;
+  --text-color: #6e7687;
+  --button-text-color: #fff;
+  --font-family-base: Arial, sans-serif;
+  --font-family-title: 'Long Cang', cursive;
+}
+
 /* 全局样式 */
 body {
-  background: #f1f1f1;
-  font-family: Arial, sans-serif;
+  background: var(--primary-bg-color);
+  font-family: var(--font-family-base);
 }
 
-/* 默认样式，适用于PC端（大于等于1200px宽度） */
-.container {
-  width: 50%;
-  margin: 30px auto 0;
-  background: #fff;
-  border-radius: 10px;
-  padding-bottom: 10px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.el-dialog {
-  width: 30%;
-}
-
-/* 媒体查询，适用于PAD端（768px - 1199px宽度） */
-@media screen and (min-width: 768px) and (max-width: 1199px) {
-  .container {
-    width: 80%;
-  }
-  
-  .el-dialog {
-    width: 40%;
-  }
-}
-
-/* 媒体查询，适用于手机端（小于768px宽度） */
-@media screen and (max-width: 767px) {
-  .container {
-    width: 90%; 
-  }
-  
-  .el-dialog {
-    width: 80%;
-  }
-}
-
-/* 标题样式 */
 .h2 {
   font-size: 35px;
   font-weight: 400;
   text-align: center;
   line-height: 100px;
   margin-bottom: 10px;
-  font-family: 'Long Cang', cursive;
+  font-family: var(--font-family-title);
+  text-shadow: 2px 2px 4px var(--text-shadow-color);
+  padding-top: 1px;
 }
 
-/* 按钮组样式 */
 .container {
-  width: calc(100% - 60px);
-  padding: 30px;
-  padding-top: 0;
+  box-sizing: border-box;
+  margin: 30px auto 0;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 8px var(--box-shadow-color);
+  padding: 0 30px 10px;
 }
 
-/* 输出类型按钮样式 */
 .output-types button {
   display: inline-block;
-  background-color: #f8f9fa;
-  border: 1px solid #dcdfe6;
+  background-color: var(--button-bg-color);
+  border: 1px solid var(--button-border-color);
   border-radius: 4px;
-  color: #6e7687;
+  color: var(--text-color);
   cursor: pointer;
   font-size: 14px;
-  margin-right: 10px;
+  margin: 0 10px 0 2px;
   padding: 8px 12px;
   transition: all 0.2s ease-in-out;
-  margin-left: 2px;
+  box-shadow: 0 4px 8px var(--box-shadow-color);
 }
 
 .output-types button.selected {
-  background-color: #6772e5;
-  color: #fff;
-  border-color: #6772e5;
+  background-color: var(--button-selected-bg-color);
+  color: var(--button-text-color);
+  border-color: var(--button-selected-bg-color);
 }
 
-/* 上传图片样式 */
-.upload-demo {
-  border-radius: 4px;
-  color: #6e7687;
-  font-size: 14px;
-  margin: 0 auto;
-  margin-top: 10px;
-  padding: 12px;
-  resize: none;
+.el-upload, .el-upload-dragger {
   width: 100%;
 }
 
-.el-upload {
-  width: 100%;
-}
-
-.el-upload-dragger {
-  width: 100%;
-}
-
-/* 输出链接样式 */
 .output-link textarea {
-  background-color: #f8f9fa;
+  background-color: var(--button-bg-color);
   border: none;
   height: 80px;
   border-radius: 4px;
-  color: #6e7687;
+  color: var(--text-color);
   font-size: 14px;
   margin: 10px 2px;
   padding: 12px;
   resize: none;
-  width: calc(100% - 4px);
+  width: 100%;
   box-sizing: border-box;
   display: block;
 }
 
-/* 隐藏v-cloak样式 */
+/* 隐藏带有v-cloak属性的元素 */
 [v-cloak] {
   display: none;
 }
@@ -144,7 +106,7 @@ body {
   <div class="container">
     <p class="h2">JIASU.IN</p>
     <div class="button-group">
-      <el-upload class="output-link" :action="`./api/${selectedApi}.php`" :auto-upload="true" drag :on-success="handleSuccess" :on-error="handleError">
+      <el-upload class="output-link" :action="uploadAction" :auto-upload="true" drag :on-success="handleSuccess" :on-error="handleError">
         <i class="el-icon-upload"></i>
         <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
       </el-upload>
@@ -154,77 +116,75 @@ body {
         <div class="output-link">
           <textarea class="form-control" id="output" v-model="result" rows="8" readonly></textarea>
         </div>
-        <p style="font-size: 14px; text-align: center;">
-          项目开源于 GitHub - <a href="https://github.com/0-RTT/telegraph" target="_blank" rel="noopener noreferrer">0-RTT/telegraph</a>
-        </p>
       </div>
     </div>
+    <p style="font-size: 14px; text-align: center;">
+      项目开源于 GitHub - <a href="https://github.com/0-RTT/telegraph" target="_blank" rel="noopener noreferrer">0-RTT/telegraph</a>
+    </p>
   </div>
 </div>
 
 <script>
 new Vue({
   el: "#app",
-  data: {
-    selectedApi: "api",
-    url: '',
-    error: false,
-    msg: "",
-    outputTypes: [
-      { title: 'URL', key: 'URL', template: '#url#' }, 
-      { title: 'Markdown', key: 'Markdown', template: '![image](#url#)' },
-      { title: 'BBCode', key: 'BBCode', template: '[img]#url#[/img]' }
-    ],
-    currentOutputType: 'URL',
+  data() {
+    return {
+      selectedApi: "api",
+      url: '',
+      error: false,
+      msg: "",
+      outputTypes: [
+        { title: 'URL', key: 'URL', template: '#url#' }, 
+        { title: 'Markdown', key: 'Markdown', template: '![image](#url#)' },
+        { title: 'BBCode', key: 'BBCode', template: '[img]#url#[/img]' }
+      ],
+      currentOutputType: 'URL',
+    };
   },
   computed: {
+    uploadAction() {
+      return `./api/${this.selectedApi}.php`;
+    },
     result() {
-      if (!this.url) {
-        return '';
-      }
+      if (!this.url) return '';
       const selectedType = this.outputTypes.find(type => type.key === this.currentOutputType);
       return selectedType ? selectedType.template.replace(/#url#/g, this.url) : '';
     },
   },
   methods: {
-    handleSuccess(response) {
-      if (response.code == 200) {
+    async handleSuccess(response) {
+      if (response.code === 200) {
         this.url = response.url;
-        this.error = false;
-        this.$message.success("上传成功");
+        await this.delayMessage("上传成功", 200, true);
       } else {
         this.handleError({ message: response.msg });
       }
     },
-    handleError(error) {
+    async handleError(error) {
       console.error("上传失败", error.message);
       this.url = '';
-      this.error = true;
-      this.msg = "上传失败：" + error.message;
-      this.$message.error(this.msg);
+      await this.delayMessage(`上传失败：${error.message}`, 100, false);
     },
     async selectLinkType(type) {
       this.currentOutputType = type.key;
-      await this.copy(); // 修改点：选择类型后自动复制
+      await this.copy();
     },
     async copy() {
-      if (this.url) {
-        const selectedType = this.outputTypes.find(type => type.key === this.currentOutputType);
-        const textToCopy = selectedType ? selectedType.template.replace(/#url#/g, this.url) : '';
-        if (textToCopy) {
-          try {
-            await navigator.clipboard.writeText(textToCopy);
-            this.$message.success("链接已复制到剪贴板");
-          } catch (err) {
-            console.error('复制失败', err);
-            this.$message.error("复制到剪贴板失败");
-          }
-        }
+      if (!this.url) return;
+      try {
+        await navigator.clipboard.writeText(this.result);
+        this.$message.success("链接已复制到剪贴板");
+      } catch (err) {
+        console.error('复制失败', err);
+        this.$message.error("复制到剪贴板失败");
       }
     },
+    async delayMessage(message, delay, isSuccess) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      isSuccess ? this.$message.success(message) : this.$message.error(message);
+    }
   },
 });
-
 </script>
 </body>
 </html>
