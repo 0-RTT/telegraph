@@ -3,54 +3,48 @@
 class ImageUploader
 {
     private $allowedTypes = ["image/gif", "image/jpeg", "image/jpg", "image/pjpeg", "image/x-png", "image/png"];
-    private $maxSize = 5 * 1024 * 1024;
-    private $domains = ['改为你的反代域名'];
+    private $maxSize = 5 * 1024 * 1024; // 5MB
+    private $domains = ['img.selipoi.top', 'picture.atago.moe'];
 
     public function upload()
     {
-        $errors = [];
-
         if (!isset($_FILES["file"])) {
-            $errors[] = "没有上传文件！";
+            $this->outputError("没有上传文件！");
+            return;
         }
 
         $file = $_FILES["file"]["name"];
         $fileType = $_FILES["file"]["type"];
-        if (!in_array($fileType, $this->allowedTypes)) {
-            $errors[] = "只允许上传gif、jpeg、jpg、png格式的图片文件！";
-        }
-
         $fileSize = $_FILES["file"]["size"];
         $filepath = $_FILES["file"]["tmp_name"];
-        
-        if ($fileType == "image/gif") {
-            if ($fileSize > $this->maxSize) {
-                $errors[] = "GIF文件超过5MB，无法上传！";
-            } else {
-                $imgpath = $this->upload_image($filepath, $fileType, $file);
+
+        if (!in_array($fileType, $this->allowedTypes)) {
+            $this->outputError("只允许上传gif、jpeg、jpg、png格式的图片文件！");
+            return;
+        }
+
+        if ($fileType == "image/gif" && $fileSize > $this->maxSize) {
+            $this->outputError("GIF文件超过5MB，无法上传！");
+            return;
+        }
+
+        if ($fileSize > $this->maxSize) {
+            $compressedImage = $this->compress_image($_FILES["file"]);
+            if (!$compressedImage) {
+                $this->outputError("图片压缩失败或压缩后仍超过最大限制！");
+                return;
             }
+            $fileType = $compressedImage['type'];
+            $fileSize = $compressedImage['size'];
+            $filepath = $compressedImage['tmp_name'];
+        }
+
+        $imgPath = $this->upload_image($filepath, $fileType, $file);
+        if ($imgPath) {
+            $imageHost = 'https://' . $this->domains[array_rand($this->domains)];
+            $this->outputSuccess("上传成功", $imageHost . $imgPath);
         } else {
-            if ($fileSize > $this->maxSize) {
-                $compressedImage = $this->compress_image($_FILES["file"]);
-                if (!$compressedImage) {
-                    $errors[] = "图片压缩失败！";
-                }
-                $fileType = $compressedImage['type'];
-                $fileSize = $compressedImage['size'];
-                $filepath = $compressedImage['tmp_name'];
-            }
-            $imgpath = $this->upload_image($filepath, $fileType, $file);
-        }
-
-        if (isset($imgpath) && $imgpath) {
-            $image_host = 'https://' . $this->domains[array_rand($this->domains)];
-            $this->outputSuccess("上传成功", $image_host . $imgpath);
-        } elseif (!in_array("GIF文件超过5MB，无法上传！", $errors)) {
-            $errors[] = "Telegraph不支持该格式";
-        }
-
-        if (!empty($errors)) {
-            $this->outputError(implode(' ', $errors));
+            $this->outputError("Telegraph不支持该格式！");
         }
     }
 
@@ -60,23 +54,24 @@ class ImageUploader
             return $image;
         }
 
-        $temp_file = tempnam(sys_get_temp_dir(), 'image');
-        if (!$temp_file) {
+        $tempFile = tempnam(sys_get_temp_dir(), 'image');
+        if (!$tempFile) {
             return false;
         }
-        imagejpeg(imagecreatefromstring(file_get_contents($image['tmp_name'])), $temp_file, 80);
-        $compressed_size = filesize($temp_file);
 
-        if ($compressed_size <= $this->maxSize) {
+        imagejpeg(imagecreatefromstring(file_get_contents($image['tmp_name'])), $tempFile, 80);
+        $compressedSize = filesize($tempFile);
+
+        if ($compressedSize <= $this->maxSize) {
             return [
                 'name' => $image['name'],
                 'type' => 'image/jpeg',
-                'tmp_name' => $temp_file,
+                'tmp_name' => $tempFile,
                 'error' => 0,
-                'size' => $compressed_size
+                'size' => $compressedSize
             ];
         } else {
-            unlink($temp_file);
+            unlink($tempFile);
             return false;
         }
     }
@@ -102,6 +97,7 @@ class ImageUploader
         $data = [
             'file' => curl_file_create($filepath, $fileType, $fileName)
         ];
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, 'https://telegra.ph/upload');
         curl_setopt($ch, CURLOPT_POST, 1);
