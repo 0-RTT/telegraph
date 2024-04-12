@@ -3,7 +3,7 @@
 class ImageUploader {
     private array $allowedTypes = ["image/gif", "image/jpeg", "image/jpg", "image/pjpeg", "image/x-png", "image/png"];
     private int $maxSize = 5 * 1024 * 1024; // 5MB
-    private array $domains = ['img.selipoi.top', 'picture.atago.moe'];
+    private array $domains = ['你的反代域名'];
 
     public function upload(): void {
         $file = $_FILES["file"] ?? null;
