@@ -131,10 +131,8 @@ new Vue({
     return {
       selectedApi: "api",
       url: '',
-      error: false,
-      msg: "",
       outputTypes: [
-        { title: 'URL', key: 'URL', template: '#url#' }, 
+        { title: 'URL', key: 'URL', template: '#url#' },
         { title: 'Markdown', key: 'Markdown', template: '![image](#url#)' },
         { title: 'BBCode', key: 'BBCode', template: '[img]#url#[/img]' }
       ],
@@ -147,23 +145,23 @@ new Vue({
     },
     result() {
       if (!this.url) return '';
-      const selectedType = this.outputTypes.find(type => type.key === this.currentOutputType);
-      return selectedType ? selectedType.template.replace(/#url#/g, this.url) : '';
+      const template = this.outputTypes.find(type => type.key === this.currentOutputType)?.template;
+      return template.replace('#url#', this.url);
     },
   },
   methods: {
     async handleSuccess(response) {
-      if (response.code === 200) {
+      if (response.status === "success") {
         this.url = response.url;
         await this.delayMessage("上传成功", 200, true);
       } else {
-        this.handleError({ message: response.msg });
+        await this.handleError(response);
       }
     },
-    async handleError(error) {
-      console.error("上传失败", error.message);
+    async handleError(response) {
+      console.error("上传失败", response.message);
       this.url = '';
-      await this.delayMessage(`上传失败：${error.message}`, 100, false);
+      await this.delayMessage(`上传失败：${response.message}`, 100, false);
     },
     async selectLinkType(type) {
       this.currentOutputType = type.key;
