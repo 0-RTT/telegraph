@@ -23,7 +23,7 @@ location /file {
 ```
 
 
-### docker
+### docker（已停止维护）
 更新请删除容器重新拉取镜像
 
 ```docker pull baipiaoo/telegraph:latest```
