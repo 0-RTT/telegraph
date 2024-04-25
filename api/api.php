@@ -3,7 +3,7 @@
 class ImageUploader {
     private const ALLOWED_TYPES = ["image/gif", "image/jpeg", "image/jpg", "image/pjpeg", "image/x-png", "image/png"];
     private const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-    private const DOMAINS = ['pic.ym.today'];
+    private const DOMAINS = ['pic.ym.today', 'caoshuo.cc'];
     private const UPLOAD_URL = 'https://telegra.ph/upload';
 
     public function upload(): void {
