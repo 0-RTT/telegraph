@@ -25,7 +25,7 @@ location /file {
 
 ```docker run -p 8080:80 -d --restart=always baipiaoo/telegraph```
 
-必须通过 HTTPS 协议服务，才能使用```navigator.clipboard```实现复制功能！
+复制功能由```navigator.clipboard```实现，需使用 HTTPS 协议！
 ###### nginx 反代配置
 ```
     location / {
