@@ -8,29 +8,24 @@
 # 使用方法
 ### 服务器
 安装nginx+php
-
 下载源码，将文件上传到网站目录，访问域名即可！
 
-#### 使用自己的反代域名
-修改api/api.php文件第6行为你的反代域名
-
-```private $domains = ['你的反代域名'];```
-###### nginx 配置
+#### 配置自己的反代域名
+修改nginx配置
 ```
 location /file {
             proxy_pass https://telegra.ph/file;
 }
 ```
+修改api/api.php文件第6行中的域名即可！
 
-
-### docker（已停止维护）
-更新请删除容器重新拉取镜像
+### docker
 
 ```docker pull baipiaoo/telegraph:latest```
 
 ```docker run -p 8080:80 -d --restart=always baipiaoo/telegraph```
 
-
+必须通过 HTTPS 协议服务，才能使用```navigator.clipboard```实现复制功能！
 ###### nginx 反代配置
 ```
     location / {
