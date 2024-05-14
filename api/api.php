@@ -3,7 +3,7 @@
 class ImageUploader {
     private const ALLOWED_TYPES = ["image/gif", "image/jpeg", "image/jpg", "image/pjpeg", "image/x-png", "image/png"];
     private const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-    private const DOMAINS = ['pic.ym.today', 'caoshuo.cc'];
+    private const DOMAINS = ['img.pub', 'pic.2bi.li', 'pic.ym.today'];
     private const UPLOAD_URL = 'https://telegra.ph/upload';
 
     public function upload(): void {
@@ -53,7 +53,7 @@ class ImageUploader {
 
         $compressedSize = filesize($tempFile);
         if ($compressedSize > self::MAX_SIZE) {
-            unlink($tempFile);
+            unlink($tempFile); // 删除压缩后的临时文件
             throw new Exception("图片压缩失败或压缩后仍超过最大限制！");
         }
 
@@ -68,6 +68,8 @@ class ImageUploader {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
         curl_close($ch);
+
+        unlink($file['tmp_name']); // 删除上传后的临时文件
 
         $json = json_decode($response, true);
         if ($json === null || !isset($json[0]['src'])) {
