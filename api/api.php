@@ -90,7 +90,7 @@ class ImageUploader {
     }
 
     private function outputSuccess(string $msg, string $url): void {
-        $this->outputResult(["status" => "success", "message" => $msg, "url" => $url]);
+        $this->outputResult(["status" => "success", "message" => $msg, "data" => $url]);
     }
 }
 
