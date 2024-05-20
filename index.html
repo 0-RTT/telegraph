@@ -152,7 +152,7 @@ new Vue({
   methods: {
     async handleSuccess(response) {
       if (response.status === "success") {
-        this.url = response.url;
+        this.url = response.data;
         await this.delayMessage("上传成功", 200, true);
       } else {
         await this.handleError(response);
