@@ -598,11 +598,11 @@ async function handleImageRequest(pathname) {
   const foundValue = await imgurl.get(pathname);
   if (foundValue) {
     const url = new URL(foundValue);
-    url.hostname = 'telegra.ph';
-    return fetch(url);
+    url.hostname = 'telegra.ph'; // 确保请求的主机名是 telegra.ph
+    return fetch(url); // 返回图片内容
   }
-  // 返回自定义消息而不是 404
-  return new Response('到底啦', { status: 200, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+  // 直接返回 404 响应
+  return new Response(null, { status: 404 }); // 返回空响应和 404 状态码
 }
 
 // 处理删除请求
