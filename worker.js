@@ -310,7 +310,6 @@ function handleRootRequest() {
       </script>
   </body>
   </html>
-  
   `, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
 }
 
@@ -352,11 +351,11 @@ function generateSessionId() {
 async function generateAdminPage() {
   const { keys } = await imgurl.list();
   
-  // 并发获取所有图片信息
+  // 并发获取所有媒体信息
   const responses = await Promise.all(keys.map(key => imgurl.get(key.name)));
   
   // 将键和对应的值组合成数组
-  const imagesData = responses.map((value, index) => {
+  const mediaData = responses.map((value, index) => {
     if (value) {
       const key = keys[index].name;
       const { timestamp, url } = JSON.parse(value); // 解析存储的 JSON 对象
@@ -366,15 +365,30 @@ async function generateAdminPage() {
   }).filter(item => item !== null); // 过滤掉无效项
 
   // 按照时间戳排序（从新到旧）
-  imagesData.sort((a, b) => b.timestamp - a.timestamp);
+  mediaData.sort((a, b) => b.timestamp - a.timestamp);
 
-  const imagesHtml = imagesData.map(({ key, url, timestamp }) => {
-    return `
-    <div class="image-container" data-key="${key}" onclick="toggleImageSelection(this)">
-    <img data-src="${url}" alt="Image" class="gallery-image lazy">
-    <div class="upload-time">上传时间: ${new Date(timestamp).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}</div> <!-- 显示北京时间 -->
-</div>
-    `;
+  const mediaHtml = mediaData.map(({ key, url, timestamp }) => {
+    const fileExtension = url.split('.').pop().toLowerCase(); // 获取文件后缀
+    if (fileExtension === 'mp4') {
+      return `
+      <div class="media-container" data-key="${key}" onclick="toggleImageSelection(this)">
+        <div class="media-type">视频</div> <!-- 显示媒体类型 -->
+        <video class="gallery-video" style="width: 100%; height: 100%; object-fit: contain;" data-src="${url}">
+          <source src="${url}" type="video/mp4">
+          您的浏览器不支持视频标签。
+        </video>
+        <button class="play-button" onclick="playVideo(event, '${url}')">播放</button>
+        <div class="upload-time">上传时间: ${new Date(timestamp).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}</div>
+      </div>
+      `;
+    } else {
+      return `
+      <div class="image-container" data-key="${key}" onclick="toggleImageSelection(this)">
+        <img data-src="${url}" alt="Image" class="gallery-image lazy">
+        <div class="upload-time">上传时间: ${new Date(timestamp).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}</div>
+      </div>
+      `;
+    }
   }).join('');
 
   const html = `
@@ -409,7 +423,7 @@ async function generateAdminPage() {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* 自适应列数 */
         gap: 16px; /* 图片间距 */
       }
-      .image-container {
+      .image-container, .media-container {
         position: relative;
         overflow: hidden;
         border-radius: 12px;
@@ -417,7 +431,18 @@ async function generateAdminPage() {
         aspect-ratio: 1 / 1;
         transition: transform 0.3s, box-shadow 0.3s; /* 过渡效果 */
       }
-      .image-container .upload-time {
+      .media-type {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 5px;
+        border-radius: 5px;
+        font-size: 14px;
+        z-index: 10;
+      }
+      .image-container .upload-time, .media-container .upload-time {
         position: absolute;
         bottom: 10px;
         left: 10px;
@@ -429,7 +454,7 @@ async function generateAdminPage() {
         z-index: 10;
         display: none; /* 初始状态为隐藏 */
       }
-      .image-container:hover {
+      .image-container:hover, .media-container:hover {
         transform: scale(1.05); /* 鼠标悬停时放大 */
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2); /* 增加阴影 */
       }
@@ -443,7 +468,7 @@ async function generateAdminPage() {
       .gallery-image.loaded {
         opacity: 1; /* 加载完成后设置为不透明 */
       }
-      .image-container.selected {
+      .media-container.selected {
         border: 2px solid #007bff; /* 选中时的边框颜色 */
       }  
       .footer {
@@ -467,6 +492,22 @@ async function generateAdminPage() {
       }
       .hidden {
         display: none; /* 隐藏元素 */
+      }
+      .play-button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 15px;
+        cursor: pointer;
+        z-index: 10;
+      }
+      .play-button:hover {
+        background-color: rgba(0, 0, 0, 0.9);
       }
       @media (max-width: 600px) {
         .gallery {
@@ -533,11 +574,26 @@ async function generateAdminPage() {
           body: JSON.stringify(Array.from(selectedKeys))
         });
         if (response.ok) {
-          alert('选中的图片已删除');
-          location.reload(); // 刷新页面以更新图片列表
+          alert('选中的媒体已删除');
+          location.reload(); // 刷新页面以更新媒体列表
         } else {
           alert('删除失败');
         }
+      }
+
+      // 播放视频的函数
+      function playVideo(event, url) {
+        event.stopPropagation(); // 阻止事件冒泡，避免触发选择
+        const video = document.createElement('video');
+        video.src = url;
+        video.controls = true;
+        video.style.width = '100%';
+        video.style.height = '100%';
+        video.style.objectFit = 'contain';
+        const mediaContainer = event.target.closest('.media-container');
+        mediaContainer.innerHTML = ''; // 清空容器
+        mediaContainer.appendChild(video); // 添加视频元素
+        video.play(); // 播放视频
       }
 
       // 懒加载实现
@@ -569,7 +625,7 @@ async function generateAdminPage() {
   <body>
     <div class="header">
       <div class="header-left">
-        <span>当前共有 ${imagesData.length} 张图</span>
+        <span>当前共有 ${mediaData.length} 个媒体文件</span>
       </div>
       <div class="header-right hidden">
         <span>选中数量: <span id="selected-count">0</span></span>
@@ -577,7 +633,7 @@ async function generateAdminPage() {
       </div>
     </div>
     <div class="gallery">
-      ${imagesHtml}
+      ${mediaHtml}
     </div>
     <div class="footer">
       到底啦
