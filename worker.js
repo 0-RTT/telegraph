@@ -90,226 +90,227 @@ function handleRootRequest() {
     </style>
   </head>
   <body>
-  <div class="background" id="background"></div>
-  <div class="card">
-    <div class="title">Telegraph图床</div>
-    <div class="card-body">
-      <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-        <div class="file-input-container">
-          <input id="fileInput" name="file" type="file" class="form-control-file" data-browse-on-zone-click="true">
-        </div>
-        <div class="form-group mb-3 uniform-height" style="display: none;">
-          <button type="button" class="btn btn-light mr-2" id="urlBtn">URL</button>
-          <button type="button" class="btn btn-light mr-2" id="bbcodeBtn">BBCode</button>
-          <button type="button" class="btn btn-light" id="markdownBtn">Markdown</button>
-        </div>
-        <div class="form-group mb-3 uniform-height" style="display: none;">
-          <textarea class="form-control" id="fileLink" readonly></textarea>
-        </div>
-        <div id="uploadingText" class="uniform-height" style="display: none; text-align: center;">文件上传中...</div>
-        <div id="compressingText" class="uniform-height" style="display: none; text-align: center;">图片压缩中...</div>
-      </form>
-    </div>
-    <p style="font-size: 14px; text-align: center;">
-      项目开源于 GitHub - <a href="https://github.com/0-RTT/telegraph" target="_blank" rel="noopener noreferrer">0-RTT/telegraph</a>
-    </p>
-    <script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/jquery/3.6.0/jquery.min.js" type="application/javascript"></script>
-    <script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/js/fileinput.min.js" type="application/javascript"></script>
-    <script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/js/locales/zh.min.js" type="application/javascript"></script>
-    <script src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/toastr.js/2.1.4/toastr.min.js" type="application/javascript"></script>
-    <script>
-      async function fetchBingImages() {
-        const response = await fetch('/bing-images');
-        const data = await response.json();
-        return data.data.map(image => image.url);
-      }
-      async function setBackgroundImages() {
-        const images = await fetchBingImages();
-        const backgroundDiv = document.getElementById('background');
-        if (images.length > 0) {
-          backgroundDiv.style.backgroundImage = 'url(' + images[0] + ')';
+    <div class="background" id="background"></div>
+    <div class="card">
+      <div class="title">Telegraph图床</div>
+      <div class="card-body">
+        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+          <div class="file-input-container">
+            <input id="fileInput" name="file" type="file" class="form-control-file" data-browse-on-zone-click="true">
+          </div>
+          <div class="form-group mb-3 uniform-height" style="display: none;">
+            <button type="button" class="btn btn-light mr-2" id="urlBtn">URL</button>
+            <button type="button" class="btn btn-light mr-2" id="bbcodeBtn">BBCode</button>
+            <button type="button" class="btn btn-light" id="markdownBtn">Markdown</button>
+          </div>
+          <div class="form-group mb-3 uniform-height" style="display: none;">
+            <textarea class="form-control" id="fileLink" readonly></textarea>
+          </div>
+          <div id="uploadingText" class="uniform-height" style="display: none; text-align: center;">文件上传中...</div>
+          <div id="compressingText" class="uniform-height" style="display: none; text-align: center;">图片压缩中...</div>
+        </form>
+      </div>
+      <p style="font-size: 14px; text-align: center;">
+        项目开源于 GitHub - <a href="https://github.com/0-RTT/telegraph" target="_blank" rel="noopener noreferrer">0-RTT/telegraph</a>
+      </p>
+      <script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/jquery/3.6.0/jquery.min.js" type="application/javascript"></script>
+      <script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/js/fileinput.min.js" type="application/javascript"></script>
+      <script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/js/locales/zh.min.js" type="application/javascript"></script>
+      <script src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/toastr.js/2.1.4/toastr.min.js" type="application/javascript"></script>
+      <script>
+        async function fetchBingImages() {
+          const response = await fetch('/bing-images');
+          const data = await response.json();
+          return data.data.map(image => image.url);
         }
-        let index = 0;
-        let currentBackgroundDiv = backgroundDiv;
-        setInterval(() => {
-          const nextIndex = (index + 1) % images.length;
-          const nextImage = new Image();
-          nextImage.src = images[nextIndex];
-          const nextBackgroundDiv = document.createElement('div');
-          nextBackgroundDiv.className = 'background next';
-          nextBackgroundDiv.style.backgroundImage = 'url(' + images[nextIndex] + ')';
-          document.body.appendChild(nextBackgroundDiv);
-          nextBackgroundDiv.style.opacity = 0;
-          setTimeout(() => {
-            nextBackgroundDiv.style.opacity = 1;
-          }, 50);
-          setTimeout(() => {
-            document.body.removeChild(currentBackgroundDiv);
-            currentBackgroundDiv = nextBackgroundDiv;
-            index = nextIndex;
-          }, 1000);
-        }, 5000);
-      }
-      $(document).ready(function() {
-        let originalImageURL = '';
-        initFileInput();
-        setBackgroundImages();
-        function initFileInput() {
-          $("#fileInput").fileinput({
-            theme: 'fa',
-            language: 'zh',
-            browseClass: "btn btn-primary",
-            removeClass: "btn btn-danger",
-            showUpload: false,
-            showPreview: false,
-          }).on('filebatchselected', handleFileSelection)
-            .on('fileclear', handleFileClear);
-        }
-        async function handleFileSelection() {
-          const file = $('#fileInput')[0].files[0];
-          if (file) {
-            await uploadFile(file);
+        async function setBackgroundImages() {
+          const images = await fetchBingImages();
+          const backgroundDiv = document.getElementById('background');
+          if (images.length > 0) {
+            backgroundDiv.style.backgroundImage = 'url(' + images[0] + ')';
           }
+          let index = 0;
+          let currentBackgroundDiv = backgroundDiv;
+          setInterval(() => {
+            const nextIndex = (index + 1) % images.length;
+            const nextImage = new Image();
+            nextImage.src = images[nextIndex];
+            const nextBackgroundDiv = document.createElement('div');
+            nextBackgroundDiv.className = 'background next';
+            nextBackgroundDiv.style.backgroundImage = 'url(' + images[nextIndex] + ')';
+            document.body.appendChild(nextBackgroundDiv);
+            nextBackgroundDiv.style.opacity = 0;
+            setTimeout(() => {
+              nextBackgroundDiv.style.opacity = 1;
+            }, 50);
+            setTimeout(() => {
+              document.body.removeChild(currentBackgroundDiv);
+              currentBackgroundDiv = nextBackgroundDiv;
+              index = nextIndex;
+            }, 1000);
+          }, 5000);
         }
-        async function uploadFile(file) {
-          try {
-            const interfaceInfo = {
-              acceptTypes: 'image/gif,image/jpeg,image/jpg,image/png,video/mp4',
-              gifAndVideoMaxSize: 5 * 1024 * 1024,
-              otherMaxSize: 5 * 1024 * 1024,
-              compressImage: true
-            };
-            if (['image/gif', 'video/mp4'].includes(file.type)) {
-              if (file.size > interfaceInfo.gifAndVideoMaxSize) {
-                toastr.error('文件必须≤' + interfaceInfo.gifAndVideoMaxSize / (1024 * 1024) + 'MB');
-                return;
-              }
-            } else {
-              if (interfaceInfo.compressImage === true) {
-                const compressedFile = await compressImage(file);
-                file = compressedFile;
-              } else if (interfaceInfo.compressImage === false) {
-                if (file.size > interfaceInfo.otherMaxSize) {
-                  toastr.error('文件必须≤' + interfaceInfo.otherMaxSize / (1024 * 1024) + 'MB');
+        $(document).ready(function() {
+          let originalImageURL = '';
+          initFileInput();
+          setBackgroundImages();
+          function initFileInput() {
+            $("#fileInput").fileinput({
+              theme: 'fa',
+              language: 'zh',
+              browseClass: "btn btn-primary",
+              removeClass: "btn btn-danger",
+              showUpload: false,
+              showPreview: false,
+            }).on('filebatchselected', handleFileSelection)
+              .on('fileclear', handleFileClear);
+          }
+          async function handleFileSelection() {
+            const file = $('#fileInput')[0].files[0];
+            if (file) {
+              await uploadFile(file);
+            }
+          }
+          async function uploadFile(file) {
+            try {
+              const interfaceInfo = {
+                acceptTypes: 'image/gif,image/jpeg,image/jpg,image/png,video/mp4',
+                gifAndVideoMaxSize: 5 * 1024 * 1024,
+                otherMaxSize: 5 * 1024 * 1024,
+                compressImage: true
+              };
+              if (['image/gif', 'video/mp4'].includes(file.type)) {
+                if (file.size > interfaceInfo.gifAndVideoMaxSize) {
+                  toastr.error('文件必须≤' + interfaceInfo.gifAndVideoMaxSize / (1024 * 1024) + 'MB');
                   return;
+                }
+              } else {
+                if (interfaceInfo.compressImage === true) {
+                  const compressedFile = await compressImage(file);
+                  file = compressedFile;
+                } else if (interfaceInfo.compressImage === false) {
+                  if (file.size > interfaceInfo.otherMaxSize) {
+                    toastr.error('文件必须≤' + interfaceInfo.otherMaxSize / (1024 * 1024) + 'MB');
+                    return;
+                  }
+                }
+              }
+              $('#uploadingText').show();
+              const formData = new FormData($('#uploadForm')[0]);
+              formData.set('file', file, file.name);
+              const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
+              originalImageURL = await handleUploadResponse(uploadResponse);
+              $('#fileLink').val(originalImageURL);
+              $('.form-group').show();
+              adjustTextareaHeight($('#fileLink')[0]);
+            } catch (error) {
+              console.error('上传文件时出现错误:', error);
+              $('#fileLink').val('文件上传失败！');
+            } finally {
+              $('#uploadingText').hide();
+            }
+          }
+          async function handleUploadResponse(response) {
+            if (response.ok) {
+              const result = await response.json();
+              return result.data;
+            } else {
+              return '文件上传失败！';
+            }
+          }
+          $(document).on('paste', function(event) {
+            const clipboardData = event.originalEvent.clipboardData;
+            if (clipboardData && clipboardData.items) {
+              for (let i = 0; i < clipboardData.items.length; i++) {
+                const item = clipboardData.items[i];
+                if (item.kind === 'file') {
+                  const pasteFile = item.getAsFile();
+                  uploadFile(pasteFile);
+                  break;
                 }
               }
             }
-            $('#uploadingText').show();
-            const formData = new FormData($('#uploadForm')[0]);
-            formData.set('file', file, file.name);
-            const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
-            originalImageURL = await handleUploadResponse(uploadResponse);
-            $('#fileLink').val(originalImageURL);
-            $('.form-group').show();
-            adjustTextareaHeight($('#fileLink')[0]);
-          } catch (error) {
-            console.error('上传文件时出现错误:', error);
-            $('#fileLink').val('文件上传失败！');
-          } finally {
-            $('#uploadingText').hide();
-          }
-        }
-        async function handleUploadResponse(response) {
-          if (response.ok) {
-            const result = await response.json();
-            return result.data;
-          } else {
-            return '文件上传失败！';
-          }
-        }
-        $(document).on('paste', function(event) {
-          const clipboardData = event.originalEvent.clipboardData;
-          if (clipboardData && clipboardData.items) {
-            for (let i = 0; i < clipboardData.items.length; i++) {
-              const item = clipboardData.items[i];
-              if (item.kind === 'file') {
-                const pasteFile = item.getAsFile();
-                uploadFile(pasteFile);
-                break;
-              }
-            }
-          }
-        });
-        async function compressImage(file, quality = 0.5, maxResolution = 20000000) {
-          $('#compressingText').show();
-          return new Promise((resolve) => {
-            const image = new Image();
-            image.onload = () => {
-              const width = image.width;
-              const height = image.height;
-              const resolution = width * height;
-              let scale = 1;
-              if (resolution > maxResolution) {
-                scale = Math.sqrt(maxResolution / resolution);
-              }
-              const targetWidth = Math.round(width * scale);
-              const targetHeight = Math.round(height * scale);
-              const canvas = document.createElement('canvas');
-              const ctx = canvas.getContext('2d');
-              canvas.width = targetWidth;
-              canvas.height = targetHeight;
-              ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
-              canvas.toBlob((blob) => {
-                const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
-                $('#compressingText').hide();
-                resolve(compressedFile);
-              }, 'image/jpeg', quality);
-            };
-            const reader = new FileReader();
-            reader.onload = (event) => {
-              image.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
           });
-        }
-        $('#urlBtn, #bbcodeBtn, #markdownBtn').on('click', function() {
-          const fileLink = originalImageURL.trim();
-          if (fileLink !== '') {
-            let formattedLink;
-            switch ($(this).attr('id')) {
-              case 'urlBtn':
-                formattedLink = fileLink;
-                break;
-              case 'bbcodeBtn':
-                formattedLink = '[img]' + fileLink + '[/img]';
-                break;
-              case 'markdownBtn':
-                formattedLink = '![image](' + fileLink + ')';
-                break;
-              default:
-                formattedLink = fileLink;
+          async function compressImage(file, quality = 0.5, maxResolution = 20000000) {
+            $('#compressingText').show();
+            return new Promise((resolve) => {
+              const image = new Image();
+              image.onload = () => {
+                const width = image.width;
+                const height = image.height;
+                const resolution = width * height;
+                let scale = 1;
+                if (resolution > maxResolution) {
+                  scale = Math.sqrt(maxResolution / resolution);
+                }
+                const targetWidth = Math.round(width * scale);
+                const targetHeight = Math.round(height * scale);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+                ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
+                canvas.toBlob((blob) => {
+                  const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
+                  $('#compressingText').hide();
+                  resolve(compressedFile);
+                }, 'image/jpeg', quality);
+              };
+              const reader = new FileReader();
+              reader.onload = (event) => {
+                image.src = event.target.result;
+              };
+              reader.readAsDataURL(file);
+            });
+          }
+          $('#urlBtn, #bbcodeBtn, #markdownBtn').on('click', function() {
+            const fileLink = originalImageURL.trim();
+            if (fileLink !== '') {
+              let formattedLink;
+              switch ($(this).attr('id')) {
+                case 'urlBtn':
+                  formattedLink = fileLink;
+                  break;
+                case 'bbcodeBtn':
+                  formattedLink = '[img]' + fileLink + '[/img]';
+                  break;
+                case 'markdownBtn':
+                  formattedLink = '![image](' + fileLink + ')';
+                  break;
+                default:
+                  formattedLink = fileLink;
+              }
+              $('#fileLink').val(formattedLink);
+              adjustTextareaHeight($('#fileLink')[0]);
+              copyToClipboardWithToastr(formattedLink);
             }
-            $('#fileLink').val(formattedLink);
+          });
+          function handleFileClear(event) {
+            $('#fileLink').val('');
             adjustTextareaHeight($('#fileLink')[0]);
-            copyToClipboardWithToastr(formattedLink);
+            hideButtonsAndTextarea();
+          }
+          function adjustTextareaHeight(textarea) {
+            textarea.style.height = '1px';
+            textarea.style.height = (textarea.scrollHeight) + 'px';
+          }
+          function copyToClipboardWithToastr(text) {
+            const input = document.createElement('input');
+            input.setAttribute('value', text);
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            toastr.success('已复制到剪贴板', '', { timeOut: 300 });
+          }
+          function hideButtonsAndTextarea() {
+            $('#urlBtn, #bbcodeBtn, #markdownBtn, #fileLink').parent('.form-group').hide();
           }
         });
-        function handleFileClear(event) {
-          $('#fileLink').val('');
-          adjustTextareaHeight($('#fileLink')[0]);
-          hideButtonsAndTextarea();
-        }
-        function adjustTextareaHeight(textarea) {
-          textarea.style.height = '1px';
-          textarea.style.height = (textarea.scrollHeight) + 'px';
-        }
-        function copyToClipboardWithToastr(text) {
-          const input = document.createElement('input');
-          input.setAttribute('value', text);
-          document.body.appendChild(input);
-          input.select();
-          document.execCommand('copy');
-          document.body.removeChild(input);
-          toastr.success('已复制到剪贴板', '', { timeOut: 300 });
-        }
-        function hideButtonsAndTextarea() {
-          $('#urlBtn, #bbcodeBtn, #markdownBtn, #fileLink').parent('.form-group').hide();
-        }
-      });
-    </script>
+      </script>
   </body>
-</html>
+  </html>
+  
   `, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
 }
 
@@ -351,19 +352,29 @@ function generateSessionId() {
 async function generateAdminPage() {
   const { keys } = await imgurl.list();
   
-  // 并发获取所有图片 URL
+  // 并发获取所有图片信息
   const responses = await Promise.all(keys.map(key => imgurl.get(key.name)));
   
-  const imagesHtml = responses.map((value, index) => {
+  // 将键和对应的值组合成数组
+  const imagesData = responses.map((value, index) => {
     if (value) {
       const key = keys[index].name;
-      return `
-      <div class="image-container" data-key="${key}" onclick="toggleImageSelection(this)">
-          <img data-src="${value}" alt="Image" class="gallery-image lazy">
-      </div>
-      `;
+      const { timestamp, url } = JSON.parse(value); // 解析存储的 JSON 对象
+      return { key, timestamp, url };
     }
-    return '';
+    return null;
+  }).filter(item => item !== null); // 过滤掉无效项
+
+  // 按照时间戳排序（从新到旧）
+  imagesData.sort((a, b) => b.timestamp - a.timestamp);
+
+  const imagesHtml = imagesData.map(({ key, url, timestamp }) => {
+    return `
+    <div class="image-container" data-key="${key}" onclick="toggleImageSelection(this)">
+    <img data-src="${url}" alt="Image" class="gallery-image lazy">
+    <div class="upload-time">上传时间: ${new Date(timestamp).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}</div> <!-- 显示北京时间 -->
+</div>
+    `;
   }).join('');
 
   const html = `
@@ -395,20 +406,37 @@ async function generateAdminPage() {
       }
       .gallery {
         display: grid;
-        grid-template-columns: repeat(4, 1fr); /* 每行4张图片 */
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* 自适应列数 */
+        gap: 16px; /* 图片间距 */
       }
       .image-container {
         position: relative;
         overflow: hidden;
         border-radius: 12px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        aspect-ratio: 1 / 1; /* 使图片容器为正方形 */
+        aspect-ratio: 1 / 1;
+        transition: transform 0.3s, box-shadow 0.3s; /* 过渡效果 */
+      }
+      .image-container .upload-time {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        background-color: rgba(255, 255, 255, 0.7);
+        padding: 5px;
+        border-radius: 5px;
+        color: #000;
+        font-size: 14px;
+        z-index: 10;
+        display: none; /* 初始状态为隐藏 */
+      }
+      .image-container:hover {
+        transform: scale(1.05); /* 鼠标悬停时放大 */
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2); /* 增加阴影 */
       }
       .gallery-image {
         width: 100%;
-        height: auto; /* 高度自适应 */
-        object-fit: cover;
+        height: 100%; /* 高度填满容器 */
+        object-fit: cover; /* 确保图片覆盖容器 */
         transition: opacity 0.3s; /* 过渡效果 */
         opacity: 0; /* 初始透明度为0 */
       }
@@ -416,10 +444,8 @@ async function generateAdminPage() {
         opacity: 1; /* 加载完成后设置为不透明 */
       }
       .image-container.selected {
-        transform: scale(0.95);
-        filter: grayscale(100%);
-        border: 2px solid #007bff;
-      }
+        border: 2px solid #007bff; /* 选中时的边框颜色 */
+      }  
       .footer {
         margin-top: 20px;
         text-align: center;
@@ -444,7 +470,7 @@ async function generateAdminPage() {
       }
       @media (max-width: 600px) {
         .gallery {
-          grid-template-columns: repeat(2, 1fr); /* 每行2张图片 */
+          grid-template-columns: repeat(2, 1fr); /* 小屏幕上每行2张图片 */
         }
         .header {
           flex-direction: column;
@@ -469,16 +495,20 @@ async function generateAdminPage() {
       function toggleImageSelection(container) {
         const key = container.getAttribute('data-key');
         container.classList.toggle('selected');
+        const uploadTime = container.querySelector('.upload-time');
+      
         if (container.classList.contains('selected')) {
           selectedKeys.add(key);
           selectedCount++;
+          uploadTime.style.display = 'block'; // 显示上传时间
         } else {
           selectedKeys.delete(key);
           selectedCount--;
+          uploadTime.style.display = 'none'; // 隐藏上传时间
         }
         updateDeleteButton();
       }
-
+      
       function updateDeleteButton() {
         const deleteButton = document.getElementById('delete-button');
         const countDisplay = document.getElementById('selected-count');
@@ -539,9 +569,9 @@ async function generateAdminPage() {
   <body>
     <div class="header">
       <div class="header-left">
-        <span>当前共有 ${responses.length} 张图</span>
+        <span>当前共有 ${imagesData.length} 张图</span>
       </div>
-      <div class="header-right hidden"> <!-- 添加 hidden 类 -->
+      <div class="header-right hidden">
         <span>选中数量: <span id="selected-count">0</span></span>
         <button id="delete-button" class="delete-button" onclick="deleteSelectedImages()">删除选中</button>
       </div>
@@ -554,7 +584,6 @@ async function generateAdminPage() {
     </div>
   </body>
 </html>
-
   `;
   return new Response(html, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
 }
@@ -582,7 +611,13 @@ async function handleUploadRequest(request) {
     const responseData = await response.json();
     const imageKey = responseData[0].src;
     const imageURL = `https://${domain}${imageKey}`;
-    await imgurl.put(imageKey, imageURL);
+    
+    // 获取当前时间戳
+    const timestamp = Date.now();
+    
+    // 将时间戳和 URL 存储到 KV 中
+    await imgurl.put(imageKey, JSON.stringify({ timestamp, url: imageURL }));
+    
     return new Response(JSON.stringify({ data: imageURL }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
@@ -615,7 +650,7 @@ async function handleBingImagesRequest() {
 async function handleImageRequest(pathname) {
   const foundValue = await imgurl.get(pathname);
   if (foundValue) {
-    const url = new URL(foundValue);
+    const url = new URL(JSON.parse(foundValue).url); // 解析存储的 JSON 对象以获取 URL
     url.hostname = 'telegra.ph'; // 确保请求的主机名是 telegra.ph
     return fetch(url); // 返回图片内容
   }
