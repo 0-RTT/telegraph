@@ -367,176 +367,194 @@ async function generateAdminPage() {
   }).join('');
 
   const html = `
-  <!DOCTYPE html>
-  <html>
+<!DOCTYPE html>
+<html>
   <head>
-      <title>图库</title>
-      <link rel="icon" href="https://p1.meituan.net/csc/c195ee91001e783f39f41ffffbbcbd484286.ico" type="image/x-icon">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <style>
-          body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              background-color: #f4f4f4;
-              margin: 0;
-              padding: 20px;
-          }
-          .header {
-              position: sticky;
-              top: 0;
-              background-color: #ffffff;
-              z-index: 1000;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 20px;
-              padding: 15px 20px;
-              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-              border-radius: 8px;
-          }
-          .gallery {
-              display: grid;
-              grid-template-columns: repeat(4, 1fr); /* 每行4张图片 */
-              gap: 20px;
-          }
-          .image-container {
-              position: relative;
-              overflow: hidden;
-              border-radius: 12px;
-              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-              aspect-ratio: 16 / 9;
-          }
-          .gallery-image {
-              width: 100%;
-              height: 100%;
-              object-fit: cover;
-              transition: transform 0.2s;
-              opacity: 0; /* 初始透明度为0 */
-              transition: opacity 0.3s; /* 过渡效果 */
-          }
-          .gallery-image.loaded {
-              opacity: 1; /* 加载完成后设置为不透明 */
-          }
-          .image-container.selected {
-              transform: scale(0.95);
-              filter: grayscale(100%);
-              border: 2px solid #007bff;
-          }
-          .footer {
-              margin-top: 20px;
-              text-align: center;
-              font-size: 18px;
-              color: #555;
-          }
-          .delete-button {
-              background-color: #ff4d4d;
-              color: white;
-              border: none;
-              border-radius: 5px;
-              padding: 10px 15px;
-              cursor: pointer;
-              transition: background-color 0.3s;
-          }
-          .delete-button:hover {
-              background-color: #ff1a1a;
-          }
-          @media (max-width: 600px) {
-              .header {
-                  flex-direction: column;
-                  align-items: flex-start;
-              }
-              .header-right {
-                  margin-top: 10px;
-              }
-              .footer {
-                  font-size: 16px;
-              }
-          }
-      </style>
-      <script>
-          let selectedCount = 0;
-          const selectedKeys = new Set(); // 用于存储选中的键
+    <title>图库</title>
+    <link rel="icon" href="https://p1.meituan.net/csc/c195ee91001e783f39f41ffffbbcbd484286.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+      }
+      .header {
+        position: sticky;
+        top: 0;
+        background-color: #ffffff;
+        z-index: 1000;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding: 15px 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+      .gallery {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); /* 每行4张图片 */
+        gap: 20px;
+      }
+      .image-container {
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        aspect-ratio: 1 / 1; /* 使图片容器为正方形 */
+      }
+      .gallery-image {
+        width: 100%;
+        height: auto; /* 高度自适应 */
+        object-fit: cover;
+        transition: opacity 0.3s; /* 过渡效果 */
+        opacity: 0; /* 初始透明度为0 */
+      }
+      .gallery-image.loaded {
+        opacity: 1; /* 加载完成后设置为不透明 */
+      }
+      .image-container.selected {
+        transform: scale(0.95);
+        filter: grayscale(100%);
+        border: 2px solid #007bff;
+      }
+      .footer {
+        margin-top: 20px;
+        text-align: center;
+        font-size: 18px;
+        color: #555;
+      }
+      .delete-button {
+        background-color: #ff4d4d;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 15px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        width: auto; /* 按钮宽度自适应 */
+      }
+      .delete-button:hover {
+        background-color: #ff1a1a;
+      }
+      .hidden {
+        display: none; /* 隐藏元素 */
+      }
+      @media (max-width: 600px) {
+        .gallery {
+          grid-template-columns: repeat(2, 1fr); /* 每行2张图片 */
+        }
+        .header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .header-right {
+          margin-top: 10px;
+        }
+        .footer {
+          font-size: 16px;
+        }
+        .delete-button {
+          width: 100%; /* 按钮宽度100% */
+          margin-top: 10px; /* 增加按钮与其他元素的间距 */
+        }
+      }
+    </style>
+    <script>
+      let selectedCount = 0;
+      const selectedKeys = new Set(); // 用于存储选中的键
 
-          function toggleImageSelection(container) {
-              const key = container.getAttribute('data-key');
-              container.classList.toggle('selected');
-              if (container.classList.contains('selected')) {
-                  selectedKeys.add(key);
-                  selectedCount++;
-              } else {
-                  selectedKeys.delete(key);
-                  selectedCount--;
-              }
-              updateDeleteButton();
-          }
+      function toggleImageSelection(container) {
+        const key = container.getAttribute('data-key');
+        container.classList.toggle('selected');
+        if (container.classList.contains('selected')) {
+          selectedKeys.add(key);
+          selectedCount++;
+        } else {
+          selectedKeys.delete(key);
+          selectedCount--;
+        }
+        updateDeleteButton();
+      }
 
-          function updateDeleteButton() {
-              const deleteButton = document.getElementById('delete-button');
-              const countDisplay = document.getElementById('selected-count');
-              countDisplay.textContent = selectedCount;
-              deleteButton.classList.toggle('show', selectedCount > 0);
-          }
+      function updateDeleteButton() {
+        const deleteButton = document.getElementById('delete-button');
+        const countDisplay = document.getElementById('selected-count');
+        countDisplay.textContent = selectedCount;
 
-          async function deleteSelectedImages() {
-              if (selectedKeys.size === 0) return;
-              const response = await fetch('/delete-images', {
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify(Array.from(selectedKeys))
-              });
-              if (response.ok) {
-                  alert('选中的图片已删除');
-                  location.reload(); // 刷新页面以更新图片列表
-              } else {
-                  alert('删除失败');
-              }
-          }
+        // 显示或隐藏选中数量和删除按钮
+        const headerRight = document.querySelector('.header-right');
+        if (selectedCount > 0) {
+          headerRight.classList.remove('hidden');
+        } else {
+          headerRight.classList.add('hidden');
+        }
+      }
 
-          // 懒加载实现
-          document.addEventListener('DOMContentLoaded', () => {
-              const images = document.querySelectorAll('.gallery-image[data-src]');
-              const options = {
-                  root: null, // 使用视口作为根
-                  rootMargin: '0px',
-                  threshold: 0.1 // 10% 可见时触发
-              };
+      async function deleteSelectedImages() {
+        if (selectedKeys.size === 0) return;
+        const response = await fetch('/delete-images', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(Array.from(selectedKeys))
+        });
+        if (response.ok) {
+          alert('选中的图片已删除');
+          location.reload(); // 刷新页面以更新图片列表
+        } else {
+          alert('删除失败');
+        }
+      }
 
-              const imageObserver = new IntersectionObserver((entries, observer) => {
-                  entries.forEach(entry => {
-                      if (entry.isIntersecting) {
-                          const img = entry.target;
-                          img.src = img.dataset.src; // 使用 data-src 属性来存储真实的图片 URL
-                          img.onload = () => img.classList.add('loaded'); // 加载完成后添加样式
-                          observer.unobserve(img); // 停止观察
-                      }
-                  });
-              }, options);
+      // 懒加载实现
+      document.addEventListener('DOMContentLoaded', () => {
+        const images = document.querySelectorAll('.gallery-image[data-src]');
+        const options = {
+          root: null, // 使用视口作为根
+          rootMargin: '0px',
+          threshold: 0.1 // 10% 可见时触发
+        };
 
-              images.forEach(image => {
-                  imageObserver.observe(image); // 开始观察每个图片
-              });
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const img = entry.target;
+              img.src = img.dataset.src; // 使用 data-src 属性来存储真实的图片 URL
+              img.onload = () => img.classList.add('loaded'); // 加载完成后添加样式
+              observer.unobserve(img); // 停止观察
+            }
           });
-      </script>
+        }, options);
+
+        images.forEach(image => {
+          imageObserver.observe(image); // 开始观察每个图片
+        });
+      });
+    </script>
   </head>
   <body>
-      <div class="header">
-          <div class="header-left">
-              <span>当前共有 ${responses.length} 张图</span>
-          </div>
-          <div class="header-right">
-              <span>选中数量: <span id="selected-count">0</span></span>
-              <button id="delete-button" class="delete-button" onclick="deleteSelectedImages()">删除选中</button>
-          </div>
+    <div class="header">
+      <div class="header-left">
+        <span>当前共有 ${responses.length} 张图</span>
       </div>
-      <div class="gallery">
-          ${imagesHtml}
+      <div class="header-right hidden"> <!-- 添加 hidden 类 -->
+        <span>选中数量: <span id="selected-count">0</span></span>
+        <button id="delete-button" class="delete-button" onclick="deleteSelectedImages()">删除选中</button>
       </div>
-      <div class="footer">
-          到底啦
-      </div>
+    </div>
+    <div class="gallery">
+      ${imagesHtml}
+    </div>
+    <div class="footer">
+      到底啦
+    </div>
   </body>
-  </html>
+</html>
+
   `;
   return new Response(html, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
 }
