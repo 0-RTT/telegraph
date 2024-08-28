@@ -59,5 +59,6 @@
 2. 点击 **编辑代码**。
 3. 清除 Worker 原本的代码。
 4. 复制粘贴 [worker.js](https://raw.githubusercontent.com/0-RTT/telegraph/main/worker.js) 中的代码。
-5. 点击 **部署**。
-6. 访问自定义域名即可访问图床。
+5. 将代码第一行中的```example.com```改为你的自定义域。
+6. 点击 **部署**。
+7. 访问自定义域名即可访问图床。
