@@ -4,8 +4,6 @@ const adminPath = 'admin'; // 自定义管理路径
 // 处理请求
 export async function handleRequest(request, DATABASE, env) {
   const { pathname } = new URL(request.url);
-  
-  // 从环境变量中获取用户名和密码
   const USERNAME = env.USERNAME; // 从环境变量获取用户名
   const PASSWORD = env.PASSWORD; // 从环境变量获取密码
 
@@ -310,11 +308,9 @@ function handleRootRequest() {
 // 处理管理请求
 async function handleAdminRequest(DATABASE, request, USERNAME, PASSWORD) {
   const authHeader = request.headers.get('Authorization');
-  
   if (!authHeader || !isValidCredentials(authHeader, USERNAME, PASSWORD)) {
     return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Admin"' } });
   }
-
   return await generateAdminPage(DATABASE); // 生成管理页面
 }
 
@@ -324,17 +320,12 @@ function isValidCredentials(authHeader, USERNAME, PASSWORD) {
   const credentials = atob(base64Credentials).split(':');
   const username = credentials[0];
   const password = credentials[1];
-  
   return username === USERNAME && password === PASSWORD;
 }
 
 // 生成管理页面的 HTML
 async function generateAdminPage(DATABASE) {
   const mediaData = await fetchMediaData(DATABASE);
-
-  // 按照时间戳排序（从新到旧）
-  mediaData.sort((a, b) => b.timestamp - a.timestamp);
-
   const mediaHtml = mediaData.map(({ key, url, timestamp }) => {
     const fileExtension = url.split('.').pop().toLowerCase(); // 获取文件后缀
     if (fileExtension === 'mp4') {
@@ -358,7 +349,6 @@ async function generateAdminPage(DATABASE) {
       `;
     }
   }).join('');
-
   const html = `
   <!DOCTYPE html>
   <html>
@@ -636,13 +626,8 @@ async function handleUploadRequest(request, DATABASE) {
     const responseData = await response.json();
     const imageKey = responseData[0].src;
     const imageURL = `https://${domain}${imageKey}`;
-    
-    // 获取当前时间戳
     const timestamp = Date.now();
-    
-    // 将时间戳和 URL 存储到 D1 数据库中
     await DATABASE.prepare('INSERT INTO media (key, timestamp, url) VALUES (?, ?, ?)').bind(imageKey, timestamp, imageURL).run();
-    
     return new Response(JSON.stringify({ data: imageURL }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
@@ -679,7 +664,6 @@ async function handleImageRequest(pathname, DATABASE) {
     url.hostname = 'telegra.ph'; // 确保请求的主机名是 telegra.ph
     return fetch(url); // 返回图片内容
   }
-  // 直接返回 404 响应
   return new Response(null, { status: 404 }); // 返回空响应和 404 状态码
 }
 
@@ -688,12 +672,13 @@ async function handleDeleteImagesRequest(request, DATABASE) {
   if (request.method !== 'POST') {
     return new Response('Method Not Allowed', { status: 405 });
   }
-  
   try {
     const keysToDelete = await request.json();
-    for (const key of keysToDelete) {
-      await DATABASE.prepare('DELETE FROM media WHERE key = ?').bind(key).run(); // 从 D1 数据库中删除图片
+    if (keysToDelete.length === 0) {
+      return new Response(JSON.stringify({ message: '没有要删除的项' }), { status: 400 });
     }
+    const placeholders = keysToDelete.map(() => '?').join(',');
+    await DATABASE.prepare(`DELETE FROM media WHERE key IN (${placeholders})`).bind(...keysToDelete).run();
     return new Response(JSON.stringify({ message: '删除成功' }), { status: 200 });
   } catch (error) {
     console.error('删除图片时出错:', error);
