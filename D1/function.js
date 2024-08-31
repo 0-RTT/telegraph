@@ -82,240 +82,231 @@ function handleRootRequest() {
       </style>
     </head>
     <body>
-      <div class="background" id="background"></div>
-      <div class="card">
+    <div class="background" id="background"></div>
+    <div class="card">
         <div class="title">Telegraph图床</div>
         <div class="card-body">
-          <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-            <div class="file-input-container">
-              <input id="fileInput" name="file" type="file" class="form-control-file" data-browse-on-zone-click="true" multiple>
-            </div>
-            <div class="form-group mb-3 uniform-height" style="display: none;">
-              <button type="button" class="btn btn-light mr-2" id="urlBtn">URL</button>
-              <button type="button" class="btn btn-light mr-2" id="bbcodeBtn">BBCode</button>
-              <button type="button" class="btn btn-light" id="markdownBtn">Markdown</button>
-            </div>
-            <div class="form-group mb-3 uniform-height" style="display: none;">
-              <textarea class="form-control" id="fileLink" readonly></textarea>
-            </div>
-            <div id="uploadingText" class="uniform-height" style="display: none; text-align: center;">文件上传中...</div>
-            <div id="compressingText" class="uniform-height" style="display: none; text-align: center;">图片压缩中...</div>
-          </form>
+            <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+                <div class="file-input-container">
+                    <input id="fileInput" name="file" type="file" class="form-control-file" data-browse-on-zone-click="true" multiple>
+                </div>
+                <div class="form-group mb-3 uniform-height" style="display: none;">
+                    <button type="button" class="btn btn-light mr-2" id="urlBtn">URL</button>
+                    <button type="button" class="btn btn-light mr-2" id="bbcodeBtn">BBCode</button>
+                    <button type="button" class="btn btn-light" id="markdownBtn">Markdown</button>
+                </div>
+                <div class="form-group mb-3 uniform-height" style="display: none;">
+                    <textarea class="form-control" id="fileLink" readonly></textarea>
+                </div>
+            </form>
         </div>
         <p style="font-size: 14px; text-align: center;">
-          项目开源于 GitHub - <a href="https://github.com/0-RTT/telegraph" target="_blank" rel="noopener noreferrer">0-RTT/telegraph</a>
+            项目开源于 GitHub - <a href="https://github.com/0-RTT/telegraph" target="_blank" rel="noopener noreferrer">0-RTT/telegraph</a>
         </p>
         <script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/jquery/3.6.0/jquery.min.js" type="application/javascript"></script>
         <script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/js/fileinput.min.js" type="application/javascript"></script>
         <script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/js/locales/zh.min.js" type="application/javascript"></script>
         <script src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/toastr.js/2.1.4/toastr.min.js" type="application/javascript"></script>
         <script>
-        async function fetchBingImages() {
-          const response = await fetch('/bing-images');
-          const data = await response.json();
-          return data.data.map(image => image.url);
-        }
-      
-        async function setBackgroundImages() {
-          const images = await fetchBingImages();
-          const backgroundDiv = document.getElementById('background');
-          if (images.length > 0) {
-            backgroundDiv.style.backgroundImage = 'url(' + images[0] + ')';
-          }
-          let index = 0;
-          let currentBackgroundDiv = backgroundDiv;
-          setInterval(() => {
-            const nextIndex = (index + 1) % images.length;
-            const nextImage = new Image();
-            nextImage.src = images[nextIndex];
-            const nextBackgroundDiv = document.createElement('div');
-            nextBackgroundDiv.className = 'background next';
-            nextBackgroundDiv.style.backgroundImage = 'url(' + images[nextIndex] + ')';
-            document.body.appendChild(nextBackgroundDiv);
-            nextBackgroundDiv.style.opacity = 0;
-            setTimeout(() => {
-              nextBackgroundDiv.style.opacity = 1;
-            }, 50);
-            setTimeout(() => {
-              document.body.removeChild(currentBackgroundDiv);
-              currentBackgroundDiv = nextBackgroundDiv;
-              index = nextIndex;
-            }, 1000);
-          }, 5000);
-        }
-      
-        $(document).ready(function() {
-          let originalImageURLs = [];
-          initFileInput();
-          setBackgroundImages();
-      
-          function initFileInput() {
-            $("#fileInput").fileinput({
-              theme: 'fa',
-              language: 'zh',
-              browseClass: "btn btn-primary",
-              removeClass: "btn btn-danger",
-              showUpload: false,
-              showPreview: false,
-            }).on('filebatchselected', handleFileSelection)
-              .on('fileclear', handleFileClear);
-          }
-      
-          async function handleFileSelection() {
-            const files = $('#fileInput')[0].files;
-            $('#uploadingText').show();
-            for (let i = 0; i < files.length; i++) {
-              await uploadFile(files[i]);
+            async function fetchBingImages() {
+                const response = await fetch('/bing-images');
+                const data = await response.json();
+                return data.data.map(image => image.url);
             }
-          }
-      
-          async function uploadFile(file) {
-            try {
-              const interfaceInfo = {
-                acceptTypes: 'image/gif,image/jpeg,image/jpg,image/png,video/mp4',
-                gifAndVideoMaxSize: 5 * 1024 * 1024,
-                otherMaxSize: 5 * 1024 * 1024,
-                compressImage: true
-              };
-              if (['image/gif', 'video/mp4'].includes(file.type)) {
-                if (file.size > interfaceInfo.gifAndVideoMaxSize) {
-                  toastr.error('文件必须≤' + interfaceInfo.gifAndVideoMaxSize / (1024 * 1024) + 'MB');
-                  return;
+            async function setBackgroundImages() {
+                const images = await fetchBingImages();
+                const backgroundDiv = document.getElementById('background');
+                if (images.length > 0) {
+                    backgroundDiv.style.backgroundImage = 'url(' + images[0] + ')';
                 }
-              } else {
-                if (interfaceInfo.compressImage === true) {
-                  const compressedFile = await compressImage(file);
-                  file = compressedFile;
-                } else if (interfaceInfo.compressImage === false) {
-                  if (file.size > interfaceInfo.otherMaxSize) {
-                    toastr.error('文件必须≤' + interfaceInfo.otherMaxSize / (1024 * 1024) + 'MB');
-                    return;
-                  }
-                }
-              }
-              const formData = new FormData($('#uploadForm')[0]);
-              formData.set('file', file, file.name);
-              const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
-              const originalImageURLsFromResponse = await handleUploadResponse(uploadResponse);
-              originalImageURLs = originalImageURLs.concat(originalImageURLsFromResponse);
-              $('#fileLink').val(originalImageURLs.join('\\n\\n'));
-              $('.form-group').show();
-              adjustTextareaHeight($('#fileLink')[0]);
-            } catch (error) {
-              console.error('上传文件时出现错误:', error);
-              $('#fileLink').val('文件上传失败！');
-            } finally {
-              $('#uploadingText').hide();
+                let index = 0;
+                let currentBackgroundDiv = backgroundDiv;
+                setInterval(() => {
+                    const nextIndex = (index + 1) % images.length;
+                    const nextBackgroundDiv = document.createElement('div');
+                    nextBackgroundDiv.className = 'background next';
+                    nextBackgroundDiv.style.backgroundImage = 'url(' + images[nextIndex] + ')';
+                    document.body.appendChild(nextBackgroundDiv);
+                    nextBackgroundDiv.style.opacity = 0;
+                    setTimeout(() => {
+                        nextBackgroundDiv.style.opacity = 1;
+                    }, 50);
+                    setTimeout(() => {
+                        document.body.removeChild(currentBackgroundDiv);
+                        currentBackgroundDiv = nextBackgroundDiv;
+                        index = nextIndex;
+                    }, 1000);
+                }, 5000);
             }
-          }
-      
-          async function handleUploadResponse(response) {
-            if (response.ok) {
-              const result = await response.json();
-              return result.data;
-            } else {
-              return ['文件上传失败！'];
-            }
-          }
-      
-          $(document).on('paste', function(event) {
-            const clipboardData = event.originalEvent.clipboardData;
-            if (clipboardData && clipboardData.items) {
-              for (let i = 0; i < clipboardData.items.length; i++) {
-                const item = clipboardData.items[i];
-                if (item.kind === 'file') {
-                  const pasteFile = item.getAsFile();
-                  uploadFile(pasteFile);
-                  break;
+            $(document).ready(function() {
+                let originalImageURLs = [];
+                initFileInput();
+                setBackgroundImages();
+                function initFileInput() {
+                    $("#fileInput").fileinput({
+                        theme: 'fa',
+                        language: 'zh',
+                        browseClass: "btn btn-primary",
+                        removeClass: "btn btn-danger",
+                        showUpload: false,
+                        showPreview: false,
+                    }).on('filebatchselected', handleFileSelection)
+                      .on('fileclear', handleFileClear);
                 }
-              }
-            }
-          });
-      
-          async function compressImage(file, quality = 0.5, maxResolution = 20000000) {
-            $('#compressingText').show();
-            return new Promise((resolve) => {
-              const image = new Image();
-              image.onload = () => {
-                const width = image.width;
-                const height = image.height;
-                const resolution = width * height;
-                let scale = 1;
-                if (resolution > maxResolution) {
-                  scale = Math.sqrt(maxResolution / resolution);
+                async function handleFileSelection() {
+                    const files = $('#fileInput')[0].files;
+                    for (let i = 0; i < files.length; i++) {
+                        await uploadFile(files[i]);
+                    }
                 }
-                const targetWidth = Math.round(width * scale);
-                const targetHeight = Math.round(height * scale);
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = targetWidth;
-                canvas.height = targetHeight;
-                ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
-                canvas.toBlob((blob) => {
-                  const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
-                  $('#compressingText').hide();
-                  resolve(compressedFile);
-                }, 'image/jpeg', quality);
-              };
-              const reader = new FileReader();
-              reader.onload = (event) => {
-                image.src = event.target.result;
-              };
-              reader.readAsDataURL(file);
+                async function uploadFile(file) {
+                    try {
+                        const interfaceInfo = {
+                            acceptTypes: 'image/gif,image/jpeg,image/jpg,image/png,video/mp4',
+                            gifAndVideoMaxSize: 5 * 1024 * 1024,
+                            otherMaxSize: 5 * 1024 * 1024,
+                            compressImage: true
+                        };
+                        if (['image/gif', 'video/mp4'].includes(file.type)) {
+                            if (file.size > interfaceInfo.gifAndVideoMaxSize) {
+                                toastr.error('文件必须≤' + interfaceInfo.gifAndVideoMaxSize / (1024 * 1024) + 'MB');
+                                return;
+                            }
+                        } else {
+                            if (interfaceInfo.compressImage === true) {
+                                const compressedFile = await compressImage(file);
+                                if (!compressedFile) {
+                                    toastr.error('图片压缩失败！');
+                                    return;
+                                }
+                                file = compressedFile;
+                            } else if (interfaceInfo.compressImage === false) {
+                                if (file.size > interfaceInfo.otherMaxSize) {
+                                    toastr.error('文件必须≤' + interfaceInfo.otherMaxSize / (1024 * 1024) + 'MB');
+                                    return;
+                                }
+                            }
+                        }
+                        const formData = new FormData($('#uploadForm')[0]);
+                        formData.set('file', file, file.name);
+                        const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
+                        const originalImageURLsFromResponse = await handleUploadResponse(uploadResponse);
+                        originalImageURLs = originalImageURLs.concat(originalImageURLsFromResponse);
+                        $('#fileLink').val(originalImageURLs.join('\\n\\n'));
+                        $('.form-group').show();
+                        adjustTextareaHeight($('#fileLink')[0]);
+                        toastr.success('文件上传成功！');
+                    } catch (error) {
+                        console.error('上传文件时出现错误:', error);
+                        $('#fileLink').val('文件上传失败！');
+                        toastr.error('文件上传失败！');
+                    }
+                }
+                async function handleUploadResponse(response) {
+                    if (response.ok) {
+                        const result = await response.json();
+                        return result.data;
+                    } else {
+                        toastr.error('文件上传失败！');
+                        return ['文件上传失败！'];
+                    }
+                }
+                $(document).on('paste', function(event) {
+                    const clipboardData = event.originalEvent.clipboardData;
+                    if (clipboardData && clipboardData.items) {
+                        for (let i = 0; i < clipboardData.items.length; i++) {
+                            const item = clipboardData.items[i];
+                            if (item.kind === 'file') {
+                                const pasteFile = item.getAsFile();
+                                uploadFile(pasteFile);
+                                break;
+                            }
+                        }
+                    }
+                });
+                async function compressImage(file, quality = 0.5, maxResolution = 20000000) {
+                    return new Promise((resolve) => {
+                        const image = new Image();
+                        image.onload = () => {
+                            const width = image.width;
+                            const height = image.height;
+                            const resolution = width * height;
+                            let scale = 1;
+                            if (resolution > maxResolution) {
+                                scale = Math.sqrt(maxResolution / resolution);
+                            }
+                            const targetWidth = Math.round(width * scale);
+                            const targetHeight = Math.round(height * scale);
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            canvas.width = targetWidth;
+                            canvas.height = targetHeight;
+                            ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
+                            canvas.toBlob((blob) => {
+                                if (blob) {
+                                    const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
+                                    resolve(compressedFile);
+                                    toastr.success('图片压缩成功！');
+                                } else {
+                                    resolve(null);
+                                }
+                            }, 'image/jpeg', quality);
+                        };
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            image.src = event.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                }
+                $('#urlBtn, #bbcodeBtn, #markdownBtn').on('click', function() {
+                    const fileLinks = originalImageURLs.map(url => url.trim()).filter(url => url !== '');
+                    if (fileLinks.length > 0) {
+                        let formattedLinks = '';
+                        switch ($(this).attr('id')) {
+                            case 'urlBtn':
+                                formattedLinks = fileLinks.join('\\n\\n');
+                                break;
+                            case 'bbcodeBtn':
+                                formattedLinks = fileLinks.map(url => '[img]' + url + '[/img]').join('\\n\\n');
+                                break;
+                            case 'markdownBtn':
+                                formattedLinks = fileLinks.map(url => '![image](' + url + ')').join('\\n\\n');
+                                break;
+                        }
+                        $('#fileLink').val(formattedLinks);
+                        adjustTextareaHeight($('#fileLink')[0]);
+                        copyToClipboardWithToastr(formattedLinks);
+                        toastr.success('链接已复制到剪贴板！');
+                    }
+                });
+                function handleFileClear(event) {
+                    $('#fileLink').val('');
+                    adjustTextareaHeight($('#fileLink')[0]);
+                    hideButtonsAndTextarea();
+                    originalImageURLs = [];
+                }
+                function adjustTextareaHeight(textarea) {
+                    textarea.style.height = '1px';
+                    textarea.style.height = (textarea.scrollHeight) + 'px';
+                }
+                function copyToClipboardWithToastr(text) {
+                    const input = document.createElement('textarea');
+                    input.value = text;
+                    document.body.appendChild(input);
+                    input.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(input);
+                    toastr.success('已复制到剪贴板', '', { timeOut: 300 });
+                }
+                function hideButtonsAndTextarea() {
+                    $('#urlBtn, #bbcodeBtn, #markdownBtn, #fileLink').parent('.form-group').hide();
+                }
             });
-          }
-      
-          $('#urlBtn, #bbcodeBtn, #markdownBtn').on('click', function() {
-            const fileLinks = originalImageURLs.map(url => url.trim()).filter(url => url !== '');
-            if (fileLinks.length > 0) {
-              let formattedLinks = '';
-              switch ($(this).attr('id')) {
-                case 'urlBtn':
-                  formattedLinks = fileLinks.join('\\n\\n');
-                  break;
-                case 'bbcodeBtn':
-                  formattedLinks = fileLinks.map(url => '[img]' + url + '[/img]').join('\\n\\n');
-                  break;
-                case 'markdownBtn':
-                  formattedLinks = fileLinks.map(url => '![image](' + url + ')').join('\\n\\n');
-                  break;
-                default:
-                  formattedLinks = fileLinks.join('\\n');
-              }
-              $('#fileLink').val(formattedLinks);
-              adjustTextareaHeight($('#fileLink')[0]);
-              copyToClipboardWithToastr(formattedLinks);
-            }
-          });
-      
-          function handleFileClear(event) {
-            $('#fileLink').val('');
-            adjustTextareaHeight($('#fileLink')[0]);
-            hideButtonsAndTextarea();
-            originalImageURLs = [];
-          }
-      
-          function adjustTextareaHeight(textarea) {
-            textarea.style.height = '1px';
-            textarea.style.height = (textarea.scrollHeight) + 'px';
-          }
-      
-          function copyToClipboardWithToastr(text) {
-            const input = document.createElement('textarea');
-            input.value = text;
-            document.body.appendChild(input);
-            input.select();
-            document.execCommand('copy');
-            document.body.removeChild(input);
-            toastr.success('已复制到剪贴板', '', { timeOut: 300 });
-          }
-      
-          function hideButtonsAndTextarea() {
-            $('#urlBtn, #bbcodeBtn, #markdownBtn, #fileLink').parent('.form-group').hide();
-          }
-        });
-      </script>      
-    </body>
+        </script>
+    </div>
+</body>
+
     </html>
   `, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
 }
