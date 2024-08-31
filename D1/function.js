@@ -25,96 +25,97 @@ export async function handleRequest(request, DATABASE, env) {
 
 // 处理根请求，返回首页 HTML
 function handleRootRequest() {
-  return new Response(`
-  <!DOCTYPE html>
-  <html lang="zh">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Telegraph图床-基于Workers的图床服务">
-    <meta name="keywords" content="Telegraph图床,Workers图床, Cloudflare, Workers,telegra.ph, 图床">
-    <title>Telegraph图床-基于Workers的图床服务</title>
-    <link rel="icon" href="https://p1.meituan.net/csc/c195ee91001e783f39f41ffffbbcbd484286.ico" type="image/x-icon">
-    <link href="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/twitter-bootstrap/4.6.1/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/css/fileinput.min.css" rel="stylesheet" />
-    <link href="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/toastr.js/2.1.4/toastr.min.css" rel="stylesheet" />
-    <style>
-      body {
-        margin: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-      }
-      .background {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-size: cover;
-        z-index: -1;
-        transition: opacity 1s ease-in-out;
-        opacity: 1;
-      }
-      .background.next {
-        opacity: 0;
-      }
-      .card {
-        background-color: rgba(255, 255, 255, 0.8);
-        border: none;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        padding: 20px;
-        width: 90%;
-        max-width: 400px;
-        text-align: center;
-        margin: 0 auto;
-      }
-      @media (max-width: 576px) {
-        .card {
-          margin: 20px;
+    return new Response(`
+    <!DOCTYPE html>
+    <html lang="zh">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="description" content="Telegraph图床-基于Workers的图床服务">
+      <meta name="keywords" content="Telegraph图床,Workers图床, Cloudflare, Workers,telegra.ph, 图床">
+      <title>Telegraph图床-基于Workers的图床服务</title>
+      <link rel="icon" href="https://p1.meituan.net/csc/c195ee91001e783f39f41ffffbbcbd484286.ico" type="image/x-icon">
+      <link href="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/twitter-bootstrap/4.6.1/css/bootstrap.min.css" rel="stylesheet" />
+      <link href="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/css/fileinput.min.css" rel="stylesheet" />
+      <link href="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/toastr.js/2.1.4/toastr.min.css" rel="stylesheet" />
+      <style>
+        body {
+          margin: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
         }
-      }
-      .uniform-height {
-        margin-top: 20px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="background" id="background"></div>
-    <div class="card">
-      <div class="title">Telegraph图床</div>
-      <div class="card-body">
-        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-          <div class="file-input-container">
-            <input id="fileInput" name="file" type="file" class="form-control-file" data-browse-on-zone-click="true">
-          </div>
-          <div class="form-group mb-3 uniform-height" style="display: none;">
-            <button type="button" class="btn btn-light mr-2" id="urlBtn">URL</button>
-            <button type="button" class="btn btn-light mr-2" id="bbcodeBtn">BBCode</button>
-            <button type="button" class="btn btn-light" id="markdownBtn">Markdown</button>
-          </div>
-          <div class="form-group mb-3 uniform-height" style="display: none;">
-            <textarea class="form-control" id="fileLink" readonly></textarea>
-          </div>
-          <div id="uploadingText" class="uniform-height" style="display: none; text-align: center;">文件上传中...</div>
-          <div id="compressingText" class="uniform-height" style="display: none; text-align: center;">图片压缩中...</div>
-        </form>
-      </div>
-      <p style="font-size: 14px; text-align: center;">
-        项目开源于 GitHub - <a href="https://github.com/0-RTT/telegraph" target="_blank" rel="noopener noreferrer">0-RTT/telegraph</a>
-      </p>
-      <script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/jquery/3.6.0/jquery.min.js" type="application/javascript"></script>
-      <script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/js/fileinput.min.js" type="application/javascript"></script>
-      <script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/js/locales/zh.min.js" type="application/javascript"></script>
-      <script src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/toastr.js/2.1.4/toastr.min.js" type="application/javascript"></script>
-      <script>
+        .background {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-size: cover;
+          z-index: -1;
+          transition: opacity 1s ease-in-out;
+          opacity: 1;
+        }
+        .background.next {
+          opacity: 0;
+        }
+        .card {
+          background-color: rgba(255, 255, 255, 0.8);
+          border: none;
+          border-radius: 10px;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          padding: 20px;
+          width: 90%;
+          max-width: 400px;
+          text-align: center;
+          margin: 0 auto;
+        }
+        @media (max-width: 576px) {
+          .card {
+            margin: 20px;
+          }
+        }
+        .uniform-height {
+          margin-top: 20px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="background" id="background"></div>
+      <div class="card">
+        <div class="title">Telegraph图床</div>
+        <div class="card-body">
+          <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+            <div class="file-input-container">
+              <input id="fileInput" name="file" type="file" class="form-control-file" data-browse-on-zone-click="true" multiple>
+            </div>
+            <div class="form-group mb-3 uniform-height" style="display: none;">
+              <button type="button" class="btn btn-light mr-2" id="urlBtn">URL</button>
+              <button type="button" class="btn btn-light mr-2" id="bbcodeBtn">BBCode</button>
+              <button type="button" class="btn btn-light" id="markdownBtn">Markdown</button>
+            </div>
+            <div class="form-group mb-3 uniform-height" style="display: none;">
+              <textarea class="form-control" id="fileLink" readonly></textarea>
+            </div>
+            <div id="uploadingText" class="uniform-height" style="display: none; text-align: center;">文件上传中...</div>
+            <div id="compressingText" class="uniform-height" style="display: none; text-align: center;">图片压缩中...</div>
+          </form>
+        </div>
+        <p style="font-size: 14px; text-align: center;">
+          项目开源于 GitHub - <a href="https://github.com/0-RTT/telegraph" target="_blank" rel="noopener noreferrer">0-RTT/telegraph</a>
+        </p>
+        <script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/jquery/3.6.0/jquery.min.js" type="application/javascript"></script>
+        <script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/js/fileinput.min.js" type="application/javascript"></script>
+        <script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/js/locales/zh.min.js" type="application/javascript"></script>
+        <script src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/toastr.js/2.1.4/toastr.min.js" type="application/javascript"></script>
+        <script>
         async function fetchBingImages() {
           const response = await fetch('/bing-images');
           const data = await response.json();
           return data.data.map(image => image.url);
         }
+      
         async function setBackgroundImages() {
           const images = await fetchBingImages();
           const backgroundDiv = document.getElementById('background');
@@ -142,10 +143,12 @@ function handleRootRequest() {
             }, 1000);
           }, 5000);
         }
+      
         $(document).ready(function() {
-          let originalImageURL = '';
+          let originalImageURLs = [];
           initFileInput();
           setBackgroundImages();
+      
           function initFileInput() {
             $("#fileInput").fileinput({
               theme: 'fa',
@@ -157,12 +160,15 @@ function handleRootRequest() {
             }).on('filebatchselected', handleFileSelection)
               .on('fileclear', handleFileClear);
           }
+      
           async function handleFileSelection() {
-            const file = $('#fileInput')[0].files[0];
-            if (file) {
-              await uploadFile(file);
+            const files = $('#fileInput')[0].files;
+            $('#uploadingText').show();
+            for (let i = 0; i < files.length; i++) {
+              await uploadFile(files[i]);
             }
           }
+      
           async function uploadFile(file) {
             try {
               const interfaceInfo = {
@@ -187,12 +193,12 @@ function handleRootRequest() {
                   }
                 }
               }
-              $('#uploadingText').show();
               const formData = new FormData($('#uploadForm')[0]);
               formData.set('file', file, file.name);
               const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
-              originalImageURL = await handleUploadResponse(uploadResponse);
-              $('#fileLink').val(originalImageURL);
+              const originalImageURLsFromResponse = await handleUploadResponse(uploadResponse);
+              originalImageURLs = originalImageURLs.concat(originalImageURLsFromResponse);
+              $('#fileLink').val(originalImageURLs.join('\\n\\n'));
               $('.form-group').show();
               adjustTextareaHeight($('#fileLink')[0]);
             } catch (error) {
@@ -202,14 +208,16 @@ function handleRootRequest() {
               $('#uploadingText').hide();
             }
           }
+      
           async function handleUploadResponse(response) {
             if (response.ok) {
               const result = await response.json();
               return result.data;
             } else {
-              return '文件上传失败！';
+              return ['文件上传失败！'];
             }
           }
+      
           $(document).on('paste', function(event) {
             const clipboardData = event.originalEvent.clipboardData;
             if (clipboardData && clipboardData.items) {
@@ -223,6 +231,7 @@ function handleRootRequest() {
               }
             }
           });
+      
           async function compressImage(file, quality = 0.5, maxResolution = 20000000) {
             $('#compressingText').show();
             return new Promise((resolve) => {
@@ -255,53 +264,59 @@ function handleRootRequest() {
               reader.readAsDataURL(file);
             });
           }
+      
           $('#urlBtn, #bbcodeBtn, #markdownBtn').on('click', function() {
-            const fileLink = originalImageURL.trim();
-            if (fileLink !== '') {
-              let formattedLink;
+            const fileLinks = originalImageURLs.map(url => url.trim()).filter(url => url !== '');
+            if (fileLinks.length > 0) {
+              let formattedLinks = '';
               switch ($(this).attr('id')) {
                 case 'urlBtn':
-                  formattedLink = fileLink;
+                  formattedLinks = fileLinks.join('\\n\\n');
                   break;
                 case 'bbcodeBtn':
-                  formattedLink = '[img]' + fileLink + '[/img]';
+                  formattedLinks = fileLinks.map(url => '[img]' + url + '[/img]').join('\\n\\n');
                   break;
                 case 'markdownBtn':
-                  formattedLink = '![image](' + fileLink + ')';
+                  formattedLinks = fileLinks.map(url => '![image](' + url + ')').join('\\n\\n');
                   break;
                 default:
-                  formattedLink = fileLink;
+                  formattedLinks = fileLinks.join('\\n');
               }
-              $('#fileLink').val(formattedLink);
+              $('#fileLink').val(formattedLinks);
               adjustTextareaHeight($('#fileLink')[0]);
-              copyToClipboardWithToastr(formattedLink);
+              copyToClipboardWithToastr(formattedLinks);
             }
           });
+      
           function handleFileClear(event) {
             $('#fileLink').val('');
             adjustTextareaHeight($('#fileLink')[0]);
             hideButtonsAndTextarea();
+            originalImageURLs = [];
           }
+      
           function adjustTextareaHeight(textarea) {
             textarea.style.height = '1px';
             textarea.style.height = (textarea.scrollHeight) + 'px';
           }
+      
           function copyToClipboardWithToastr(text) {
-            const input = document.createElement('input');
-            input.setAttribute('value', text);
+            const input = document.createElement('textarea');
+            input.value = text;
             document.body.appendChild(input);
             input.select();
             document.execCommand('copy');
             document.body.removeChild(input);
             toastr.success('已复制到剪贴板', '', { timeOut: 300 });
           }
+      
           function hideButtonsAndTextarea() {
             $('#urlBtn, #bbcodeBtn, #markdownBtn, #fileLink').parent('.form-group').hide();
           }
         });
-      </script>
-  </body>
-  </html>
+      </script>      
+    </body>
+    </html>
   `, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
 }
 
@@ -565,84 +580,91 @@ async function generateAdminPage(DATABASE) {
 
 // 从 D1 数据库获取媒体数据
 async function fetchMediaData(DATABASE) {
-  const result = await DATABASE.prepare('SELECT * FROM media ORDER BY timestamp DESC').all();
-  return result.results.map(row => ({
-    key: row.key,
-    timestamp: row.timestamp,
-    url: row.url
-  }));
-}
-
-// 处理文件上传请求
-async function handleUploadRequest(request, DATABASE) {
-  try {
-    const formData = await request.formData();
-    const file = formData.get('file');
-    if (!file) throw new Error('缺少文件');
-    const response = await fetch('https://telegra.ph/upload', {
-      method: 'POST',
-      body: formData
-    });
-    if (!response.ok) throw new Error('上传失败');
-    const responseData = await response.json();
-    const imageKey = responseData[0].src;
-    const imageURL = `https://${domain}${imageKey}`;
-    const timestamp = Date.now();
-    await DATABASE.prepare('INSERT INTO media (key, timestamp, url) VALUES (?, ?, ?)').bind(imageKey, timestamp, imageURL).run();
-    return new Response(JSON.stringify({ data: imageURL }), {
+    const result = await DATABASE.prepare('SELECT * FROM media ORDER BY timestamp DESC').all();
+    return result.results.map(row => ({
+      key: row.key,
+      timestamp: row.timestamp,
+      url: row.url
+    }));
+  }
+  
+  // 处理文件上传请求
+  async function handleUploadRequest(request, DATABASE) {
+    try {
+      const formData = await request.formData();
+      const files = formData.getAll('file');
+      if (files.length === 0) throw new Error('缺少文件');
+      const imageURLs = [];
+      for (const file of files) {
+        const singleFormData = new FormData();
+        singleFormData.append('file', file);
+        const response = await fetch('https://telegra.ph/upload', {
+          method: 'POST',
+          body: singleFormData
+        });
+        if (!response.ok) throw new Error('上传失败');
+        const responseData = await response.json();
+        const imageKey = responseData[0].src;
+        const imageURL = `https://${domain}${imageKey}`;
+        const timestamp = Date.now();
+        await DATABASE.prepare('INSERT INTO media (key, timestamp, url) VALUES (?, ?, ?)').bind(imageKey, timestamp, imageURL).run();
+        imageURLs.push(imageURL);
+      }
+      return new Response(JSON.stringify({ data: imageURLs }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      console.error('内部服务器错误:', error);
+      return new Response(JSON.stringify({ error: '内部服务器错误' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    }
+  }
+  
+  // 处理 Bing 图片请求
+  async function handleBingImagesRequest() {
+    const res = await fetch(`https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=5`);
+    const bing_data = await res.json();
+    const images = bing_data.images.map(image => ({
+      url: `https://cn.bing.com${image.url}`
+    }));
+    const return_data = {
+      status: true,
+      message: "操作成功",
+      data: images
+    };
+    return new Response(JSON.stringify(return_data), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
-  } catch (error) {
-    console.error('内部服务器错误:', error);
-    return new Response(JSON.stringify({ error: '内部服务器错误' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
-}
-
-// 处理 Bing 图片请求
-async function handleBingImagesRequest() {
-  const res = await fetch(`https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=5`);
-  const bing_data = await res.json();
-  const images = bing_data.images.map(image => ({
-    url: `https://cn.bing.com${image.url}`
-  }));
-  const return_data = {
-    status: true,
-    message: "操作成功",
-    data: images
-  };
-  return new Response(JSON.stringify(return_data), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' }
-  });
-}
-
-// 处理图片请求
-async function handleImageRequest(pathname, DATABASE) {
-  const result = await DATABASE.prepare('SELECT url FROM media WHERE key = ?').bind(pathname).first();
-  if (result) {
-    const url = new URL(result.url);
-    url.hostname = 'telegra.ph';
-    return fetch(url);
-  }
-  return new Response(null, { status: 404 });
-}
-
-// 处理删除请求
-async function handleDeleteImagesRequest(request, DATABASE) {
-  if (request.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 });
-  }
-  try {
-    const keysToDelete = await request.json();
-    if (keysToDelete.length === 0) {
-      return new Response(JSON.stringify({ message: '没有要删除的项' }), { status: 400 });
+  
+  // 处理图片请求
+  async function handleImageRequest(pathname, DATABASE) {
+    const result = await DATABASE.prepare('SELECT url FROM media WHERE key = ?').bind(pathname).first();
+    if (result) {
+      const url = new URL(result.url);
+      url.hostname = 'telegra.ph';
+      return fetch(url);
     }
-    const placeholders = keysToDelete.map(() => '?').join(',');
-    await DATABASE.prepare(`DELETE FROM media WHERE key IN (${placeholders})`).bind(...keysToDelete).run();
-    return new Response(JSON.stringify({ message: '删除成功' }), { status: 200 });
-  } catch (error) {
-    console.error('删除图片时出错:', error);
-    return new Response(JSON.stringify({ error: '删除失败' }), { status: 500 });
+    return new Response(null, { status: 404 });
   }
-}
+  
+  // 处理删除请求
+  async function handleDeleteImagesRequest(request, DATABASE) {
+    if (request.method !== 'POST') {
+      return new Response('Method Not Allowed', { status: 405 });
+    }
+    try {
+      const keysToDelete = await request.json();
+      if (keysToDelete.length === 0) {
+        return new Response(JSON.stringify({ message: '没有要删除的项' }), { status: 400 });
+      }
+      const placeholders = keysToDelete.map(() => '?').join(',');
+      await DATABASE.prepare(`DELETE FROM media WHERE key IN (${placeholders})`).bind(...keysToDelete).run();
+      return new Response(JSON.stringify({ message: '删除成功' }), { status: 200 });
+    } catch (error) {
+      console.error('删除图片时出错:', error);
+      return new Response(JSON.stringify({ error: '删除失败' }), { status: 500 });
+    }
+  }
+  
