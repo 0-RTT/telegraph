@@ -2,7 +2,11 @@
 
 此版本使用cloudflare d1数据库作为储存，后台管理页面响应更快！
 
-# 需要用到的命令和变量
+# 更新
+一般情况下，只需更新[function.js](https://raw.githubusercontent.com/0-RTT/telegraph/main/D1/function.js)文件中的代码。如有特殊情况，将另行通知。
+
+# 安装需要使用的变量
+
 数据库绑定变量```DATABASE``` 环境变量：设置账号```USERNAME``` 设置密码```PASSWORD```
 
 数据库初始化命令
