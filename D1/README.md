@@ -5,7 +5,7 @@
 # 更新
 一般情况下，只需更新[function.js](https://raw.githubusercontent.com/0-RTT/telegraph/main/D1/function.js)文件中的代码。如有特殊情况，将另行通知。
 
-# 安装需要使用的变量
+# 需要使用的变量
 
 数据库绑定变量```DATABASE``` 环境变量：设置账号```USERNAME``` 设置密码```PASSWORD```
 
