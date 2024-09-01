@@ -24,6 +24,9 @@
 ![](http://kycloud3.koyoo.cn/2024082977e50202408291512218799.png)
 ![](http://kycloud3.koyoo.cn/20240829639cf202408291512214544.png)
 
+# 储存方式对比
+![](http://kycloud3.koyoo.cn/20240901c5765202409011106453173.png)
+
 # 1. D1数据库限制
 
 - [D1数据库限制详情](https://developers.cloudflare.com/d1/platform/limits/)
