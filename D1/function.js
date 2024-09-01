@@ -1,7 +1,11 @@
-const domain = 'example.com';
-const adminPath = 'admin'; // 自定义管理路径
-const nsfwThreshold = 0.88; // 预设值，检查 porn、sexy 和 hentai 的总和
-const nsfwApiUrl = ''; // NSFW 检测 API URL，设置为空则跳过检查
+const domain = 'example.com'; // 自定义域名，用于构建应用程序的 URL
+const adminPath = 'admin'; // 自定义管理路径，用于访问管理界面
+const enableAuth = false; // 设置为 true 时启用访客验证，设置为 false 时禁用（默认值为 false）
+const nsfwThreshold = 0.86; // NSFW 内容检测的阈值，超过该值将被视为不适宜内容
+const nsfwApiUrl = ''; // NSFW 检测 API 的 URL，设置为空则跳过内容检查。示例 API: https://api.jiasu.in/nsfw
+
+// 用于跟踪用户是否已通过身份验证
+let isAuthenticated = false;
 
 // 处理请求
 export async function handleRequest(request, DATABASE, env) {
@@ -11,11 +15,11 @@ export async function handleRequest(request, DATABASE, env) {
 
   switch (pathname) {
     case '/':
-      return handleRootRequest();
+      return await handleRootRequest(request, USERNAME, PASSWORD);
     case `/${adminPath}`:
-      return handleAdminRequest(DATABASE, request, USERNAME, PASSWORD);
+      return await handleAdminRequest(DATABASE, request, USERNAME, PASSWORD);
     case '/upload':
-      return request.method === 'POST' ? handleUploadRequest(request, DATABASE) : new Response('Method Not Allowed', { status: 405 });
+      return request.method === 'POST' ? await handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASSWORD) : new Response('Method Not Allowed', { status: 405 });
     case '/bing-images':
       return handleBingImagesRequest();
     case '/delete-images':
@@ -25,8 +29,22 @@ export async function handleRequest(request, DATABASE, env) {
   }
 }
 
+// 从请求中提取 Authorization 头并验证凭据
+function authenticate(request, USERNAME, PASSWORD) {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader) return false;
+  return isValidCredentials(authHeader, USERNAME, PASSWORD);
+}
+
 // 处理根请求，返回首页 HTML
-function handleRootRequest() {
+async function handleRootRequest(request, USERNAME, PASSWORD) {
+  // 如果启用身份验证，则进行验证
+  if (enableAuth) {
+    if (!authenticate(request, USERNAME, PASSWORD)) {
+      return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Admin"' } });
+    }
+  }
+  isAuthenticated = true; // 用户通过身份验证（如果需要）
   return new Response(`
   <!DOCTYPE html>
   <html lang="zh">
@@ -329,14 +347,14 @@ function handleRootRequest() {
 
 // 处理管理请求
 async function handleAdminRequest(DATABASE, request, USERNAME, PASSWORD) {
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader || !isValidCredentials(authHeader, USERNAME, PASSWORD)) {
+  // 始终需要身份验证
+  if (!authenticate(request, USERNAME, PASSWORD)) {
     return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Admin"' } });
   }
   return await generateAdminPage(DATABASE);
 }
 
-// 验证凭据
+// 验证提供的凭据是否匹配
 function isValidCredentials(authHeader, USERNAME, PASSWORD) {
   const base64Credentials = authHeader.split(' ')[1];
   const credentials = atob(base64Credentials).split(':');
@@ -596,11 +614,16 @@ async function fetchMediaData(DATABASE) {
 }
 
 // 处理文件上传请求
-async function handleUploadRequest(request, DATABASE) {
+async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASSWORD) {
   try {
     const formData = await request.formData();
     const file = formData.get('file');
     if (!file) throw new Error('缺少文件');
+
+    // 验证用户是否已通过身份验证
+    if (enableAuth && !authenticate(request, USERNAME, PASSWORD)) {
+      return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Admin"' } });
+    }
 
     // 上传文件到 telegra.ph
     const response = await fetch('https://telegra.ph/upload', {
