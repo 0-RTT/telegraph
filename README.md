@@ -21,7 +21,8 @@
 - 对于需要自定义用户界面的用户，您可以自行修改代码。在修改时希望您能**保留项目的开源地址**。
 
 # 部署教程
-## 需要用到的变量和指令
+
+## 变量和指令说明
 ### 变量
 必填项目：
 
@@ -56,3 +57,86 @@ CREATE TABLE media (
     url TEXT NOT NULL
 );
 ```
+
+## Pages部署教程：
+1、
+![image](https://kycloud3.koyoo.cn/20240829ab8e7202408291110085598.png)
+2、
+![image](https://kycloud3.koyoo.cn/20240829dde8f202408291110076344.png)
+3、
+![image](https://kycloud3.koyoo.cn/2024082999a92202408291110079488.png)
+4、
+![image](http://kycloud3.koyoo.cn/2024082913106202408291111045980.png)
+5、
+![image](http://kycloud3.koyoo.cn/20240829426e2202408291111415611.png)
+6、
+![image](http://kycloud3.koyoo.cn/202408290028f20240829111205448.png)
+7、
+![image](http://kycloud3.koyoo.cn/20240906d561b202409061706196490.png)
+8、
+![image](http://kycloud3.koyoo.cn/202409064f8b3202409061708222685.png)
+9、
+![image](http://kycloud3.koyoo.cn/2024090635c19202409061709225960.png)
+10、
+![image](http://kycloud3.koyoo.cn/20240906e636520240906171027282.png)
+11、
+![image](http://kycloud3.koyoo.cn/20240906f0dfe202409061711092668.png)
+12、
+![image](http://kycloud3.koyoo.cn/2024090667330202409061711516838.png)
+13、
+![image](http://kycloud3.koyoo.cn/20240906f173a202409061713007969.png)
+14、
+![image](http://kycloud3.koyoo.cn/20240906ed143202409061715165350.png)
+15、
+![image](http://kycloud3.koyoo.cn/202409068f76a202409061718122696.png)
+16、
+![image](http://kycloud3.koyoo.cn/20240906b79a6202409061719043430.png)
+17、
+![image](http://kycloud3.koyoo.cn/20240906188f8202409061720032928.png)
+18、
+![image](http://kycloud3.koyoo.cn/202409066761e202409061721281588.png)
+19、
+![image](http://kycloud3.koyoo.cn/2024090677f2320240906172317323.png)
+20、
+![image](http://kycloud3.koyoo.cn/202409065c29920240906172451915.png)
+
+
+## Worker部署教程：
+1、
+![image](https://kycloud3.koyoo.cn/20240829ab8e7202408291110085598.png)
+2、
+![image](https://kycloud3.koyoo.cn/20240829dde8f202408291110076344.png)
+3、
+![image](https://kycloud3.koyoo.cn/2024082999a92202408291110079488.png)
+4、
+![image](http://kycloud3.koyoo.cn/2024082913106202408291111045980.png)
+5、
+![image](http://kycloud3.koyoo.cn/20240829426e2202408291111415611.png)
+6、
+![image](http://kycloud3.koyoo.cn/202408290028f20240829111205448.png)
+7、
+![image](http://kycloud3.koyoo.cn/202408295c74a202408291112222566.png)
+8、
+![image](http://kycloud3.koyoo.cn/20240829b4a21202408291118209822.png)
+9、
+![image](http://kycloud3.koyoo.cn/20240829d5fe4202408291113048235.png)
+10、
+![image](http://kycloud3.koyoo.cn/20240829f9ecc202408291113197734.png)
+11、
+![image](http://kycloud3.koyoo.cn/2024082997a84202408291113394516.png)
+12、
+![image](http://kycloud3.koyoo.cn/202408294223e202408291114234528.png)
+13、
+![image](http://kycloud3.koyoo.cn/202408294def5202408291113564340.png)
+14、
+![image](http://kycloud3.koyoo.cn/20240829ee47f202408291114436925.png)
+15、
+![image](http://kycloud3.koyoo.cn/202409068a32a202409061653566339.png)
+16、
+![image](http://kycloud3.koyoo.cn/20240829acccf202408291119324308.png)
+17、
+![image](http://kycloud3.koyoo.cn/202408299f1cf202408291115372291.png)
+18、
+![image](http://kycloud3.koyoo.cn/2024082995808202408291115555979.png)
+19、
+![image](http://kycloud3.koyoo.cn/20240829a4d5f202408291117024227.png)
