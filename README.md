@@ -1,3 +1,7 @@
+# 2024年9月6号起telegra.ph禁止了上传媒体文件，此项目终结。
+
+详情：https://x.com/durov/status/1832054680899215647
+
 # 介绍
 
 基于Cloudflare Workers和Pages的Telegraph图床。
