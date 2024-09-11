@@ -1,3 +1,5 @@
+# 新项目：https://github.com/0-RTT/JSimage
+
 # 2024年9月6号起telegra.ph禁止了上传媒体文件，此项目终结。
 
 详情：https://x.com/durov/status/1832054680899215647
