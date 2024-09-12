@@ -699,14 +699,14 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
       return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Admin"' } });
     }
 
-    const response = await fetch('https://telegra.ph/upload', {
+    const response = await fetch('https://telegra.ph/upload?source=bugtracker', {
       method: 'POST',
       body: formData
     });
     if (!response.ok) throw new Error('上传到 telegra.ph 失败');
 
     const responseData = await response.json();
-    const imageKey = responseData[0].src;
+    const imageKey = responseData.src;
     const telegraPhURL = `https://telegra.ph${imageKey}`;
 
     if (!nsfwApiUrl) {
