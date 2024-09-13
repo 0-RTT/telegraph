@@ -1,5 +1,4 @@
-## 变量和指令说明
-
+## 使用说明
 ### 变量
 
 #### 必填项目：
@@ -23,6 +22,15 @@
 | 变量名        | 说明                                      |
 |---------------|-------------------------------------------|
 | `ENABLE_AUTH` | 设置为 `true` 时启用访客验证，为空或者不设置代表关闭访客验证。 |
+
+### 数据库初始化指令
+```
+CREATE TABLE media (
+    file_path TEXT PRIMARY KEY,
+    timestamp INTEGER NOT NULL,
+    url TEXT NOT NULL
+);
+```
 
 # 功能
 
