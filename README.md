@@ -16,7 +16,7 @@
 使用telegraph接口上传，请使用Telegraph文件夹下的_worker.js。
 
 # 部署教程
-TG_BOT的部署参考telegraph的，只是需要获取```TG_BOT_TOKEN```和```TG_CHAT_ID```这两个变量,可参考[README.md](https://github.com/0-RTT/telegraph/blob/main/TG_BOT/README.md)
+TG_BOT的部署参考telegraph的，需要额外获取```TG_BOT_TOKEN```和```TG_CHAT_ID```这两个变量,可参考[README.md](https://github.com/0-RTT/telegraph/blob/main/TG_BOT/README.md)。
 
 [Pages部署教程](https://github.com/0-RTT/telegraph?tab=readme-ov-file#pages%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B)
 
@@ -24,7 +24,8 @@ TG_BOT的部署参考telegraph的，只是需要获取```TG_BOT_TOKEN```和```TG
 
 
 ## Pages部署教程：
-1.  
+
+1.  第一步这里也可以下载_worker.js文件，打包成zip上传到pages。
 ![image](http://kycloud3.koyoo.cn/202409066a94720240906174103298.png)  
 
 2.  
