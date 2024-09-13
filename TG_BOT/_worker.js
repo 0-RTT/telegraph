@@ -426,7 +426,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
           });
         </script>
     </body>
-  </html>  
+  </html>   
   `, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
 }
 
@@ -722,6 +722,14 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
 
     const filePathData = await filePathResponse.json();
     const filePath = filePathData.result.file_path;
+
+    const existingMedia = await DATABASE.prepare('SELECT url FROM media WHERE file_path = ?').bind(filePath).first();
+    if (existingMedia) {
+      return new Response(JSON.stringify({ data: existingMedia.url }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
 
     const timestamp = Date.now();
     const imageURL = `https://${domain}/${filePath}`;
