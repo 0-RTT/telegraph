@@ -1,32 +1,18 @@
-# 20240912 已修复，可正常上传
-
-# ~~2024年9月6号起telegra.ph禁止了上传媒体文件，此项目终结。~~
-
-详情：https://x.com/durov/status/1832054680899215647
-
 # 介绍
 
-基于Cloudflare Workers和Pages的Telegraph图床。
+基于Cloudflare Workers和Pages的Telegraph/TG_BOT图床。
 
-# 功能
+# 更新记录
 
-- 支持访客验证。
-- 支持图片审查。
-- 支持多文件上传。
-- 支持查看历史记录。
-- 支持批量管理后台文件。
-- 支持在图床界面粘贴上传。
-- 支持上传大于5MB的图片。
-- 支持选择图片后会自动上传。
-- 支持压缩功能，默认选择图片后自动压缩。
-- 支持在管理界面显示图片上传时间，并按上传时间排序。
-- 支持修改后台路径为 /admin，可在代码的第二行进行调整。
-- 支持JPEG、JPG、PNG、GIF和MP4格式，GIF和MP4的大小需≤5MB。
-- 默认仅代理数据库中的图片链接，访问通过其他TG图床上传的链接返回404。
-- 支持URL、BBCode和Markdown格式，点击对应按钮可自动复制相应格式的链接。
-- 对于需要自定义用户界面的用户，您可以自行修改代码。在修改时希望您能**保留项目的开源地址**。
+20240913支持通过TG_BOT上传到频道
+
+20240912 已修复，可正常上传到telegraph
+
+~~2024年9月6号起telegra.ph禁止了上传媒体文件，此项目终结。~~
 
 # 部署教程
+TG_BOT的部署参考telegraph的，只是需要获取```TG_BOT_TOKEN```和```TG_CHAT_ID```这两个变量,可参考[README.md](https://github.com/0-RTT/telegraph/blob/main/TG_BOT/README.md)
+
 [Pages部署教程](https://github.com/0-RTT/telegraph?tab=readme-ov-file#pages%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B)
 
 [Worker部署教程](https://github.com/0-RTT/telegraph?tab=readme-ov-file#worker%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B)
