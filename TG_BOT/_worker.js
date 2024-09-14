@@ -228,7 +228,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
               const interfaceInfo = {
                 acceptTypes: 'image/jpeg,image/jpg,image/png,image/webp',
                 otherMaxSize: 20 * 1024 * 1024,
-                compressImage: true
+                compressImage: false // 设置为 false，确保不压缩
               };
               const acceptedTypes = interfaceInfo.acceptTypes.split(',');
               if (!acceptedTypes.includes(file.type)) {
@@ -236,11 +236,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
                 return;
               }
       
-              if (interfaceInfo.compressImage === true) {
-                toastr.info('压缩中...', '', { timeOut: 0 });
-                const compressedFile = await compressImage(file);
-                file = compressedFile;
-              } else if (file.size > interfaceInfo.otherMaxSize) {
+              if (file.size > interfaceInfo.otherMaxSize) {
                 toastr.error('文件必须≤' + interfaceInfo.otherMaxSize / (1024 * 1024) + 'MB');
                 return;
               }
@@ -290,38 +286,6 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
               }
             }
           });
-      
-          async function compressImage(file, quality = 0.5, maxResolution = 20000000) {
-            return new Promise((resolve) => {
-              const image = new Image();
-              image.onload = () => {
-                const width = image.width;
-                const height = image.height;
-                const resolution = width * height;
-                let scale = 1;
-                if (resolution > maxResolution) {
-                  scale = Math.sqrt(maxResolution / resolution);
-                }
-                const targetWidth = Math.round(width * scale);
-                const targetHeight = Math.round(height * scale);
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = targetWidth;
-                canvas.height = targetHeight;
-                ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
-                canvas.toBlob((blob) => {
-                  const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
-                  toastr.success('图片压缩成功！');
-                  resolve(compressedFile);
-                }, 'image/jpeg', quality);
-              };
-              const reader = new FileReader();
-              reader.onload = (event) => {
-                image.src = event.target.result;
-              };
-              reader.readAsDataURL(file);
-            });
-          }
       
           $('#urlBtn, #bbcodeBtn, #markdownBtn').on('click', function() {
             const fileLinks = originalImageURLs.map(url => url.trim()).filter(url => url !== '');
