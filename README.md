@@ -3,17 +3,13 @@
 基于Cloudflare Workers和Pages的图床程序。
 
 # 更新记录
+20240914 Telegraph接口上传的文件有**时效性**，建议使用TG_BOT上传
 
-20240913支持通过TG_BOT上传到频道
+20240913 支持通过TG_BOT上传到频道
 
 20240912 已修复，可正常上传到telegraph
 
 ~~2024年9月6号起telegra.ph禁止了上传媒体文件，此项目终结。~~
-# TG_BOT和Telegraph文件夹的区别
-
-使用TG_BOT上传，请使用TG_BOT文件夹下的_worker.js。
-
-使用telegraph接口上传，请使用Telegraph文件夹下的_worker.js。
 
 # 部署教程
 TG_BOT的部署参考telegraph的，需要额外获取```TG_BOT_TOKEN```和```TG_CHAT_ID```这两个变量,可参考[README.md](https://github.com/0-RTT/telegraph/blob/main/TG_BOT/README.md)。
