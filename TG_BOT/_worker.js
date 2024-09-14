@@ -418,7 +418,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
         });
       </script>      
     </body>
-  </html>   
+  </html>     
   `, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
 }
 
@@ -748,7 +748,18 @@ async function handleImageRequest(pathname, DATABASE, TG_BOT_TOKEN) {
 
     const response = await fetch(telegramFileUrl);
     if (response.ok) {
-      return new Response(response.body, { status: response.status, headers: { 'Content-Type': response.headers.get('Content-Type') } });
+      const fileExtension = filePath.split('.').pop().toLowerCase();
+      let contentType;
+
+      if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
+        contentType = 'image/jpeg';
+      } else if (fileExtension === 'png') {
+        contentType = 'image/png';
+      } else {
+        contentType = response.headers.get('Content-Type');
+      }
+
+      return new Response(response.body, { status: response.status, headers: { 'Content-Type': contentType } });
     } else {
       return new Response(null, { status: 404 });
     }
