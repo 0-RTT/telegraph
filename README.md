@@ -21,66 +21,65 @@ TG_BOT的部署参考telegraph的，需要额外获取```TG_BOT_TOKEN```和```TG
 
 ## Pages部署教程：
 
-1. 下载_worker.js文件，打包成zip上传到pages。
-
-2.  
+#### 1、初始化数据库
 ![image](https://kycloud3.koyoo.cn/20240829ab8e7202408291110085598.png)  
 
-3.  
+ 
 ![image](https://kycloud3.koyoo.cn/20240829dde8f202408291110076344.png)  
 
-4. TG_BOT和Telegraph的初始化指令不一样，注意不要弄错。
+##### ⚠️⚠️⚠️TG_BOT和Telegraph的初始化指令不一样，注意不要弄错。
+
 ![image](https://kycloud3.koyoo.cn/2024082999a92202408291110079488.png)  
 
-5.  
+ 
 ![image](http://kycloud3.koyoo.cn/2024082913106202408291111045980.png)  
 
-6.  
+ 
 ![image](http://kycloud3.koyoo.cn/20240829426e2202408291111415611.png)  
 
-7.  
+
 ![image](http://kycloud3.koyoo.cn/202408290028f20240829111205448.png)  
 
-8.  这里可以选择链接到Git或者下载_worker.js文件打包成zip上传
+#### 2、下载对应文件夹下的_worker.js，打包成zip部署到pages
+
 ![image](http://kycloud3.koyoo.cn/20240906d561b202409061706196490.png)  
 
-9.  
-![image](http://kycloud3.koyoo.cn/202409064f8b3202409061708222685.png)  
 
-10.  
 ![image](http://kycloud3.koyoo.cn/2024090635c19202409061709225960.png)  
 
-11.  
+ 
 ![image](http://kycloud3.koyoo.cn/20240906e636520240906171027282.png)  
 
-12.  
+#### 3、设置变量
+
 ![image](http://kycloud3.koyoo.cn/20240906f0dfe202409061711092668.png)  
 
-13.  
+
 ![image](http://kycloud3.koyoo.cn/2024090667330202409061711516838.png)  
 
-14.  
+
 ![image](http://kycloud3.koyoo.cn/20240906f173a202409061713007969.png)  
 
-15.  
+ 
 ![image](http://kycloud3.koyoo.cn/20240906ed143202409061715165350.png)  
 
-16.  
+#### 4、设置自定义域名，不设置则使用pages默认域名
 ![image](http://kycloud3.koyoo.cn/202409068f76a202409061718122696.png)  
 
-17.  
+
 ![image](http://kycloud3.koyoo.cn/20240906b79a6202409061719043430.png)  
 
-18.  
+
 ![image](http://kycloud3.koyoo.cn/20240906188f8202409061720032928.png)  
 
-19.  
+#### 5、重新部署生效刚刚配置的自定义域名和变量
+
 ![image](http://kycloud3.koyoo.cn/202409066761e202409061721281588.png)  
 
-20.  
+ 
 ![image](http://kycloud3.koyoo.cn/2024090677f2320240906172317323.png)  
 
-21.  
+ 
 ![image](http://kycloud3.koyoo.cn/202409065c29920240906172451915.png)  
 
 
