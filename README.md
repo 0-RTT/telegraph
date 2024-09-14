@@ -34,7 +34,7 @@ TG_BOT的部署参考telegraph的，需要额外获取```TG_BOT_TOKEN```和```TG
 3.  
 ![image](https://kycloud3.koyoo.cn/20240829dde8f202408291110076344.png)  
 
-4.  
+4. TG_BOT和Telegraph的初始化指令不一样，注意不要弄错。
 ![image](https://kycloud3.koyoo.cn/2024082999a92202408291110079488.png)  
 
 5.  
@@ -46,7 +46,7 @@ TG_BOT的部署参考telegraph的，需要额外获取```TG_BOT_TOKEN```和```TG
 7.  
 ![image](http://kycloud3.koyoo.cn/202408290028f20240829111205448.png)  
 
-8.  
+8.  这里可以选择链接到Git或者下载_worker.js文件打包成zip上传
 ![image](http://kycloud3.koyoo.cn/20240906d561b202409061706196490.png)  
 
 9.  
