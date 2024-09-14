@@ -21,8 +21,7 @@ TG_BOT的部署参考telegraph的，需要额外获取```TG_BOT_TOKEN```和```TG
 
 ## Pages部署教程：
 
-1.  第一步这里也可以下载_worker.js文件，打包成zip上传到pages。
-![image](http://kycloud3.koyoo.cn/202409066a94720240906174103298.png)  
+1. 下载_worker.js文件，打包成zip上传到pages。
 
 2.  
 ![image](https://kycloud3.koyoo.cn/20240829ab8e7202408291110085598.png)  
