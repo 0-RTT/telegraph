@@ -8,7 +8,7 @@
 | `DOMAIN`       | Workers 或 Pages 的自定义域名。                                     |
 | `USERNAME`     | 用于身份验证的用户名。                                               |
 | `PASSWORD`     | 用于身份验证的密码。                                                 |
-| `ADMIN_PATH`   | 管理页面的路径。                                                     |
+| `ADMIN_PATH`   | 管理页面的路径，不需要/。   示例：admin                                                  |
 | `TG_BOT_TOKEN` | 通过 @BotFather 获取的 Telegram 机器人令牌。                        |
 | `TG_CHAT_ID`   | 填账号的ID机器人就发给你，填频道或者群组的，机器人就发到频道或者群组，最终的文件链接是一样的。 |
 
