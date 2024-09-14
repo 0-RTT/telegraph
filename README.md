@@ -2,7 +2,7 @@
 
 基于Cloudflare Workers和Pages的图床程序。
 
-# 更新记录
+# 日志
 20240914 Telegraph接口上传的文件有**时效性**，建议使用TG_BOT上传
 
 20240913 支持通过TG_BOT上传到频道
