@@ -27,7 +27,7 @@ TG_BOT的部署参考telegraph的，需要额外获取```TG_BOT_TOKEN```和```TG
  
 ![image](https://kycloud3.koyoo.cn/20240829dde8f202408291110076344.png)  
 
-##### ⚠️⚠️⚠️TG_BOT和Telegraph的初始化指令不一样，注意不要弄错。
+###### ⚠️⚠️⚠️TG_BOT和Telegraph的初始化指令不一样，注意不要弄错。
 
 ![image](https://kycloud3.koyoo.cn/2024082999a92202408291110079488.png)  
 
@@ -85,41 +85,48 @@ TG_BOT的部署参考telegraph的，需要额外获取```TG_BOT_TOKEN```和```TG
 
 
 ## Worker部署教程：
-1、
+#### 1、初始化数据库
 ![image](https://kycloud3.koyoo.cn/20240829ab8e7202408291110085598.png)
-2、
+
 ![image](https://kycloud3.koyoo.cn/20240829dde8f202408291110076344.png)
-3、
+
+##### ⚠️⚠️⚠️TG_BOT和Telegraph的初始化指令不一样，注意不要弄错。
+
 ![image](https://kycloud3.koyoo.cn/2024082999a92202408291110079488.png)
-4、
+
 ![image](http://kycloud3.koyoo.cn/2024082913106202408291111045980.png)
-5、
+
 ![image](http://kycloud3.koyoo.cn/20240829426e2202408291111415611.png)
-6、
+
 ![image](http://kycloud3.koyoo.cn/202408290028f20240829111205448.png)
-7、
+
+#### 2、创建worker
 ![image](http://kycloud3.koyoo.cn/202408295c74a202408291112222566.png)
-8、
+
 ![image](http://kycloud3.koyoo.cn/20240829b4a21202408291118209822.png)
-9、
+
+#### 3、设置自定义域名
 ![image](http://kycloud3.koyoo.cn/20240829d5fe4202408291113048235.png)
-10、
+
 ![image](http://kycloud3.koyoo.cn/20240829f9ecc202408291113197734.png)
-11、
+
 ![image](http://kycloud3.koyoo.cn/2024082997a84202408291113394516.png)
-12、
+
 ![image](http://kycloud3.koyoo.cn/202408294223e202408291114234528.png)
-13、
+
 ![image](http://kycloud3.koyoo.cn/202408294def5202408291113564340.png)
-14、
+
+#### 4、设置变量
 ![image](http://kycloud3.koyoo.cn/20240829ee47f202408291114436925.png)
-15、
+
 ![image](http://kycloud3.koyoo.cn/202409068a32a202409061653566339.png)
-16、
+
 ![image](http://kycloud3.koyoo.cn/20240829acccf202408291119324308.png)
-17、
+
+#### 5、将_worker.js中的代码复制粘贴到编辑器中
 ![image](http://kycloud3.koyoo.cn/202408299f1cf202408291115372291.png)
-18、
+
 ![image](http://kycloud3.koyoo.cn/2024082995808202408291115555979.png)
-19、
+
+#### 6、点击部署即可
 ![image](http://kycloud3.koyoo.cn/20240829a4d5f202408291117024227.png)
