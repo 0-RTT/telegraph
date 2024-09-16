@@ -228,7 +228,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
               const interfaceInfo = {
                 acceptTypes: 'image/jpeg,image/jpg,image/png,image/webp',
                 otherMaxSize: 20 * 1024 * 1024,
-                compressImage: true
+                compressImage: false
               };
               const acceptedTypes = interfaceInfo.acceptTypes.split(',');
               if (!acceptedTypes.includes(file.type)) {
