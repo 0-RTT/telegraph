@@ -692,6 +692,18 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
 
     await DATABASE.prepare('INSERT INTO media (file_path, timestamp, url) VALUES (?, ?, ?)').bind(filePath, timestamp, imageURL).run();
 
+    // 构造消息内容
+    const message = `URL: \`${imageURL}\`\nMarkdown: \`![image](${imageURL})\``;
+    await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: TG_CHAT_ID,
+        text: message,
+        parse_mode: 'Markdown' // 使用 Markdown 格式
+      })
+    });
+
     return new Response(JSON.stringify({ data: imageURL }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
