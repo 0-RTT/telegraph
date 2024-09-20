@@ -28,7 +28,9 @@
 ### 数据库初始化指令
 ```
 CREATE TABLE media (
-    file_path TEXT PRIMARY KEY,
+    file_id TEXT PRIMARY KEY,
+    fp_ts INTEGER NOT NULL, 
+    file_path TEXT NOT NULL,
     timestamp INTEGER NOT NULL,
     url TEXT NOT NULL
 );
