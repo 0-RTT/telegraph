@@ -683,7 +683,7 @@ async function generateAdminPage(DATABASE) {
 }
 
 async function fetchMediaData(DATABASE) {
-  const result = await DATABASE.prepare('SELECT * FROM media ORDER BY timestamp DESC').all();
+  const result = await DATABASE.prepare('SELECT timestamp, url FROM media ORDER BY timestamp DESC').all();
   return result.results.map(row => ({
     timestamp: row.timestamp,
     url: row.url
@@ -695,46 +695,36 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
     const formData = await request.formData();
     const file = formData.get('file');
     if (!file) throw new Error('缺少文件');
-
     if (enableAuth && !authenticate(request, USERNAME, PASSWORD)) {
       return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Admin"' } });
     }
-
     const uploadFormData = new FormData();
     uploadFormData.append("chat_id", TG_CHAT_ID);
-    
     if (file.type.startsWith('video/')) {
       uploadFormData.append("video", file);
     } else {
       uploadFormData.append("photo", file);
     }
-
     const telegramResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/send${file.type.startsWith('video/') ? 'Video' : 'Photo'}`, {
       method: 'POST',
       body: uploadFormData
     });
-
     if (!telegramResponse.ok) {
       const errorData = await telegramResponse.json();
       throw new Error(errorData.description || '上传到 Telegram 失败');
     }
-
     const responseData = await telegramResponse.json();
     const fileId = file.type.startsWith('video/') 
       ? responseData.result.video.file_id 
       : responseData.result.photo[responseData.result.photo.length - 1].file_id;
-
     const fileExtension = file.name.split('.').pop();
     const timestamp = Date.now();
     const imageURL = `https://${domain}/${fileId}.${fileExtension}`;
-
     const existingRecord = await DATABASE.prepare('SELECT url FROM media WHERE url = ?').bind(imageURL).first();
     if (existingRecord) {
       return new Response(JSON.stringify({ data: existingRecord.url }), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
-
     await DATABASE.prepare('INSERT INTO media (timestamp, url) VALUES (?, ?)').bind(timestamp, imageURL).run();
-
     return new Response(JSON.stringify({ data: imageURL }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
@@ -747,34 +737,25 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
 
 async function handleImageRequest(pathname, DATABASE, TG_BOT_TOKEN, domain) {
   const urlToQuery = `https://${domain}${pathname}`;
-
   const result = await DATABASE.prepare('SELECT * FROM media WHERE url = ?').bind(urlToQuery).first();
-
   if (result) {
     const fileId = pathname.split('/').pop().split('.')[0];
     const getFileResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/getFile?file_id=${fileId}`);
     if (!getFileResponse.ok) {
       return new Response(null, { status: 404 });
     }
-
     const fileData = await getFileResponse.json();
     const filePath = fileData.result.file_path;
-
     const telegramFileUrl = `https://api.telegram.org/file/bot${TG_BOT_TOKEN}/${filePath}`;
-
     const response = await fetch(telegramFileUrl);
     if (response.ok) {
       const fileExtension = fileId.split('.').pop();
       let contentType = 'text/plain';
-
       if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
         contentType = 'image/jpeg';
       } else if (fileExtension === 'png') {
         contentType = 'image/png';
-      } else if (fileExtension === 'mp4') {
-        contentType = 'video/mp4';
       }
-
       return new Response(response.body, { status: response.status, headers: { 'Content-Type': contentType } });
     } else {
       return new Response(null, { status: 404 });
