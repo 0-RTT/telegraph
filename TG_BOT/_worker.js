@@ -228,7 +228,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
               const interfaceInfo = {
                 acceptTypes: 'image/*,video/*',
                 imageMaxSize: 10 * 1024 * 1024,
-                videoMaxSize: 50 * 1024 * 1024,
+                videoMaxSize: 20 * 1024 * 1024,
               };
               const acceptedTypes = interfaceInfo.acceptTypes.split(',');
         
@@ -246,7 +246,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
                 const compressedFile = await compressImage(file);
                 file = compressedFile;
               } else if (file.type.startsWith('video/') && file.size > interfaceInfo.videoMaxSize) {
-                toastr.error('视频文件必须≤50MB');
+                toastr.error('视频文件必须≤20MB');
                 return;
               }
         
