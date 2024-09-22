@@ -170,7 +170,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
           const data = await response.json();
           return data.data.map(image => image.url);
         }
-      
+        
         async function setBackgroundImages() {
           const images = await fetchBingImages();
           const backgroundDiv = document.getElementById('background');
@@ -196,13 +196,13 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
             }, 1000);
           }, 5000);
         }
-      
+        
         $(document).ready(function() {
           let originalImageURLs = [];
           let isCacheVisible = false;
           initFileInput();
           setBackgroundImages();
-      
+        
           function initFileInput() {
             $("#fileInput").fileinput({
               theme: 'fa',
@@ -214,55 +214,47 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
             }).on('filebatchselected', handleFileSelection)
               .on('fileclear', handleFileClear);
           }
-      
+        
           async function handleFileSelection() {
             const files = $('#fileInput')[0].files;
             for (let i = 0; i < files.length; i++) {
               await uploadFile(files[i]);
             }
           }
-      
+        
           async function uploadFile(file) {
             try {
               toastr.info('上传中...', '', { timeOut: 0 });
               const interfaceInfo = {
                 acceptTypes: 'image/*,video/*',
-                imageMaxSize: 10 * 1024 * 1024, // 10MB
-                videoMaxSize: 50 * 1024 * 1024, // 50MB
-                compressImage: true
+                imageMaxSize: 10 * 1024 * 1024,
+                videoMaxSize: 50 * 1024 * 1024,
               };
               const acceptedTypes = interfaceInfo.acceptTypes.split(',');
-          
+        
               const isAcceptedType = acceptedTypes.some(type => {
                 return type.includes('*') ? file.type.startsWith(type.split('/')[0]) : file.type === type;
               });
-          
+        
               if (!isAcceptedType) {
                 toastr.error('仅支持图片或视频格式的文件。');
                 return;
               }
-          
+        
               if (file.type.startsWith('image/') && file.size > interfaceInfo.imageMaxSize) {
-                toastr.error('图片文件必须≤10MB');
-                return;
-              }
-          
-              if (file.type.startsWith('video/') && file.size > interfaceInfo.videoMaxSize) {
+                toastr.info('正在压缩...', '', { timeOut: 0 });
+                const compressedFile = await compressImage(file);
+                file = compressedFile;
+              } else if (file.type.startsWith('video/') && file.size > interfaceInfo.videoMaxSize) {
                 toastr.error('视频文件必须≤50MB');
                 return;
               }
-          
-              if (interfaceInfo.compressImage && file.type.startsWith('image/') && !file.type.startsWith('image/gif')) {
-                toastr.info('压缩中...', '', { timeOut: 0 });
-                const compressedFile = await compressImage(file);
-                file = compressedFile;
-              }
-          
+        
               const formData = new FormData($('#uploadForm')[0]);
               formData.set('file', file, file.name);
               const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
               const responseData = await handleUploadResponse(uploadResponse);
-          
+        
               if (responseData.error) {
                 toastr.error(responseData.error);
               } else {
@@ -280,8 +272,8 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
             } finally {
               toastr.clear();
             }
-          }                  
-      
+          }
+        
           async function handleUploadResponse(response) {
             if (response.ok) {
               return await response.json();
@@ -290,7 +282,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
               return { error: errorData.error };
             }
           }
-      
+        
           $(document).on('paste', function(event) {
             const clipboardData = event.originalEvent.clipboardData;
             if (clipboardData && clipboardData.items) {
@@ -304,7 +296,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
               }
             }
           });
-      
+        
           async function compressImage(file, quality = 0.5, maxResolution = 20000000) {
             return new Promise((resolve) => {
               const image = new Image();
@@ -336,7 +328,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
               reader.readAsDataURL(file);
             });
           }
-      
+        
           $('#urlBtn, #bbcodeBtn, #markdownBtn').on('click', function() {
             const fileLinks = originalImageURLs.map(url => url.trim()).filter(url => url !== '');
             if (fileLinks.length > 0) {
@@ -359,19 +351,19 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
               copyToClipboardWithToastr(formattedLinks);
             }
           });
-      
+        
           function handleFileClear(event) {
             $('#fileLink').val('');
             adjustTextareaHeight($('#fileLink')[0]);
             hideButtonsAndTextarea();
             originalImageURLs = [];
           }
-      
+        
           function adjustTextareaHeight(textarea) {
             textarea.style.height = '1px';
             textarea.style.height = (textarea.scrollHeight) + 'px';
           }
-      
+        
           function copyToClipboardWithToastr(text) {
             const input = document.createElement('textarea');
             input.value = text;
@@ -381,18 +373,18 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
             document.body.removeChild(input);
             toastr.success('已复制到剪贴板', '', { timeOut: 300 });
           }
-      
+        
           function hideButtonsAndTextarea() {
             $('#urlBtn, #bbcodeBtn, #markdownBtn, #fileLink').parent('.form-group').hide();
           }
-      
+        
           function saveToLocalCache(url, fileName) {
             const timestamp = new Date().toLocaleString('zh-CN', { hour12: false });
             const cacheData = JSON.parse(localStorage.getItem('uploadCache')) || [];
             cacheData.push({ url, fileName, timestamp });
             localStorage.setItem('uploadCache', JSON.stringify(cacheData));
           }
-      
+        
           $('#viewCacheBtn').on('click', function() {
             const cacheData = JSON.parse(localStorage.getItem('uploadCache')) || [];
             const cacheContent = $('#cacheContent');
@@ -419,7 +411,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
               isCacheVisible = true;
             }
           });
-      
+        
           $(document).on('click', '.cache-item', function() {
             const url = $(this).data('url');
             originalImageURLs = [];
@@ -430,7 +422,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
             adjustTextareaHeight($('#fileLink')[0]);
           });
         });
-      </script>      
+        </script>        
     </body>
   </html>  
   `, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
@@ -693,7 +685,6 @@ async function generateAdminPage(DATABASE) {
 async function fetchMediaData(DATABASE) {
   const result = await DATABASE.prepare('SELECT * FROM media ORDER BY timestamp DESC').all();
   return result.results.map(row => ({
-    key: row.url,
     timestamp: row.timestamp,
     url: row.url
   }));
@@ -704,21 +695,25 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
     const formData = await request.formData();
     const file = formData.get('file');
     if (!file) throw new Error('缺少文件');
+
     if (enableAuth && !authenticate(request, USERNAME, PASSWORD)) {
       return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Admin"' } });
     }
+
     const uploadFormData = new FormData();
     uploadFormData.append("chat_id", TG_CHAT_ID);
+    
     if (file.type.startsWith('video/')) {
       uploadFormData.append("video", file);
     } else {
       uploadFormData.append("photo", file);
     }
+
     const telegramResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/send${file.type.startsWith('video/') ? 'Video' : 'Photo'}`, {
       method: 'POST',
       body: uploadFormData
     });
-    
+
     if (!telegramResponse.ok) {
       const errorData = await telegramResponse.json();
       throw new Error(errorData.description || '上传到 Telegram 失败');
@@ -728,11 +723,18 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
     const fileId = file.type.startsWith('video/') 
       ? responseData.result.video.file_id 
       : responseData.result.photo[responseData.result.photo.length - 1].file_id;
+
     const fileExtension = file.name.split('.').pop();
     const timestamp = Date.now();
     const imageURL = `https://${domain}/${fileId}.${fileExtension}`;
+
+    const existingRecord = await DATABASE.prepare('SELECT url FROM media WHERE url = ?').bind(imageURL).first();
+    if (existingRecord) {
+      return new Response(JSON.stringify({ data: existingRecord.url }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+
     await DATABASE.prepare('INSERT INTO media (timestamp, url) VALUES (?, ?)').bind(timestamp, imageURL).run();
-    
+
     return new Response(JSON.stringify({ data: imageURL }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
@@ -744,26 +746,35 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
 }
 
 async function handleImageRequest(pathname, DATABASE, TG_BOT_TOKEN, domain) {
-  const fileId = pathname.startsWith('/') ? pathname.slice(1).split('.').slice(0, -1).join('.') : pathname.split('.').slice(0, -1).join('.');
   const urlToQuery = `https://${domain}${pathname}`;
-  const result = await DATABASE.prepare('SELECT url FROM media WHERE url = ?').bind(urlToQuery).first();
+
+  const result = await DATABASE.prepare('SELECT * FROM media WHERE url = ?').bind(urlToQuery).first();
+
   if (result) {
+    const fileId = pathname.split('/').pop().split('.')[0];
     const getFileResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/getFile?file_id=${fileId}`);
     if (!getFileResponse.ok) {
       return new Response(null, { status: 404 });
     }
+
     const fileData = await getFileResponse.json();
     const filePath = fileData.result.file_path;
+
     const telegramFileUrl = `https://api.telegram.org/file/bot${TG_BOT_TOKEN}/${filePath}`;
+
     const response = await fetch(telegramFileUrl);
     if (response.ok) {
       const fileExtension = fileId.split('.').pop();
       let contentType = 'text/plain';
+
       if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
         contentType = 'image/jpeg';
       } else if (fileExtension === 'png') {
         contentType = 'image/png';
+      } else if (fileExtension === 'mp4') {
+        contentType = 'video/mp4';
       }
+
       return new Response(response.body, { status: response.status, headers: { 'Content-Type': contentType } });
     } else {
       return new Response(null, { status: 404 });
