@@ -28,9 +28,9 @@
 ### 数据库初始化指令
 ```
 CREATE TABLE media (
-    file_path TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     timestamp INTEGER NOT NULL,
-    url TEXT NOT NULL
+    url TEXT NOT NULL UNIQUE
 );
 ```
 
