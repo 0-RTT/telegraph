@@ -22,7 +22,7 @@ export default {
       case '/delete-images':
         return handleDeleteImagesRequest(request, DATABASE);
       default:
-        return await handleImageRequest(pathname, DATABASE, TG_BOT_TOKEN);
+        return await handleImageRequest(pathname, DATABASE, TG_BOT_TOKEN, domain);
     }
   }
 };
@@ -226,29 +226,43 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
             try {
               toastr.info('上传中...', '', { timeOut: 0 });
               const interfaceInfo = {
-                acceptTypes: 'image/jpeg,image/jpg,image/png,image/webp',
-                otherMaxSize: 20 * 1024 * 1024,
-                compressImage: false
+                acceptTypes: 'image/*,video/*',
+                imageMaxSize: 10 * 1024 * 1024, // 10MB
+                videoMaxSize: 50 * 1024 * 1024, // 50MB
+                compressImage: true
               };
               const acceptedTypes = interfaceInfo.acceptTypes.split(',');
-              if (!acceptedTypes.includes(file.type)) {
-                toastr.error('仅支持JPEG、PNG 或 WebP 格式的文件。');
+          
+              const isAcceptedType = acceptedTypes.some(type => {
+                return type.includes('*') ? file.type.startsWith(type.split('/')[0]) : file.type === type;
+              });
+          
+              if (!isAcceptedType) {
+                toastr.error('仅支持图片或视频格式的文件。');
                 return;
               }
-      
-              if (interfaceInfo.compressImage === true) {
+          
+              if (file.type.startsWith('image/') && file.size > interfaceInfo.imageMaxSize) {
+                toastr.error('图片文件必须≤10MB');
+                return;
+              }
+          
+              if (file.type.startsWith('video/') && file.size > interfaceInfo.videoMaxSize) {
+                toastr.error('视频文件必须≤50MB');
+                return;
+              }
+          
+              if (interfaceInfo.compressImage && file.type.startsWith('image/') && !file.type.startsWith('image/gif')) {
                 toastr.info('压缩中...', '', { timeOut: 0 });
                 const compressedFile = await compressImage(file);
                 file = compressedFile;
-              } else if (file.size > interfaceInfo.otherMaxSize) {
-                toastr.error('文件必须≤' + interfaceInfo.otherMaxSize / (1024 * 1024) + 'MB');
-                return;
               }
-      
+          
               const formData = new FormData($('#uploadForm')[0]);
               formData.set('file', file, file.name);
               const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
               const responseData = await handleUploadResponse(uploadResponse);
+          
               if (responseData.error) {
                 toastr.error(responseData.error);
               } else {
@@ -266,7 +280,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
             } finally {
               toastr.clear();
             }
-          }
+          }                  
       
           async function handleUploadResponse(response) {
             if (response.ok) {
@@ -418,7 +432,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
         });
       </script>      
     </body>
-  </html>     
+  </html>  
   `, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
 }
 
@@ -679,7 +693,7 @@ async function generateAdminPage(DATABASE) {
 async function fetchMediaData(DATABASE) {
   const result = await DATABASE.prepare('SELECT * FROM media ORDER BY timestamp DESC').all();
   return result.results.map(row => ({
-    key: row.file_path,
+    key: row.url,
     timestamp: row.timestamp,
     url: row.url
   }));
@@ -690,75 +704,66 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
     const formData = await request.formData();
     const file = formData.get('file');
     if (!file) throw new Error('缺少文件');
-
     if (enableAuth && !authenticate(request, USERNAME, PASSWORD)) {
       return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Admin"' } });
     }
-
     const uploadFormData = new FormData();
     uploadFormData.append("chat_id", TG_CHAT_ID);
-    uploadFormData.append("photo", file);
-
-    const telegramResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendPhoto`, {
+    if (file.type.startsWith('video/')) {
+      uploadFormData.append("video", file);
+    } else {
+      uploadFormData.append("photo", file);
+    }
+    const telegramResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/send${file.type.startsWith('video/') ? 'Video' : 'Photo'}`, {
       method: 'POST',
       body: uploadFormData
     });
-
-    if (!telegramResponse.ok) throw new Error('上传到 Telegram 失败');
-
-    const responseData = await telegramResponse.json();
-    const fileId = responseData.result.photo[responseData.result.photo.length - 1].file_id;
-
-    const filePathResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/getFile?file_id=${fileId}`);
-    if (!filePathResponse.ok) throw new Error('获取文件路径失败');
-
-    const filePathData = await filePathResponse.json();
-    const filePath = filePathData.result.file_path;
-
-    const existingMedia = await DATABASE.prepare('SELECT url FROM media WHERE file_path = ?').bind(filePath).first();
-    if (existingMedia) {
-      return new Response(JSON.stringify({ data: existingMedia.url }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    
+    if (!telegramResponse.ok) {
+      const errorData = await telegramResponse.json();
+      throw new Error(errorData.description || '上传到 Telegram 失败');
     }
 
+    const responseData = await telegramResponse.json();
+    const fileId = file.type.startsWith('video/') 
+      ? responseData.result.video.file_id 
+      : responseData.result.photo[responseData.result.photo.length - 1].file_id;
+    const fileExtension = file.name.split('.').pop();
     const timestamp = Date.now();
-    const imageURL = `https://${domain}/${filePath}`;
-
-    await DATABASE.prepare('INSERT INTO media (file_path, timestamp, url) VALUES (?, ?, ?)').bind(filePath, timestamp, imageURL).run();
-
+    const imageURL = `https://${domain}/${fileId}.${fileExtension}`;
+    await DATABASE.prepare('INSERT INTO media (timestamp, url) VALUES (?, ?)').bind(timestamp, imageURL).run();
+    
     return new Response(JSON.stringify({ data: imageURL }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
     console.error('内部服务器错误:', error);
-    return new Response(JSON.stringify({ error: '内部服务器错误' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
 
-async function handleImageRequest(pathname, DATABASE, TG_BOT_TOKEN) {
-  const cleanedPathname = pathname.startsWith('/') ? pathname.slice(1) : pathname;
-
-  const result = await DATABASE.prepare('SELECT file_path, url FROM media WHERE file_path = ?').bind(cleanedPathname).first();
+async function handleImageRequest(pathname, DATABASE, TG_BOT_TOKEN, domain) {
+  const fileId = pathname.startsWith('/') ? pathname.slice(1).split('.').slice(0, -1).join('.') : pathname.split('.').slice(0, -1).join('.');
+  const urlToQuery = `https://${domain}${pathname}`;
+  const result = await DATABASE.prepare('SELECT url FROM media WHERE url = ?').bind(urlToQuery).first();
   if (result) {
-    const filePath = result.file_path;
+    const getFileResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/getFile?file_id=${fileId}`);
+    if (!getFileResponse.ok) {
+      return new Response(null, { status: 404 });
+    }
+    const fileData = await getFileResponse.json();
+    const filePath = fileData.result.file_path;
     const telegramFileUrl = `https://api.telegram.org/file/bot${TG_BOT_TOKEN}/${filePath}`;
-
     const response = await fetch(telegramFileUrl);
     if (response.ok) {
-      const fileExtension = filePath.split('.').pop().toLowerCase();
-      let contentType;
-
+      const fileExtension = fileId.split('.').pop();
+      let contentType = 'text/plain';
       if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
         contentType = 'image/jpeg';
       } else if (fileExtension === 'png') {
         contentType = 'image/png';
-      } else {
-        contentType = response.headers.get('Content-Type');
       }
-
       return new Response(response.body, { status: response.status, headers: { 'Content-Type': contentType } });
     } else {
       return new Response(null, { status: 404 });
@@ -794,7 +799,7 @@ async function handleDeleteImagesRequest(request, DATABASE) {
       return new Response(JSON.stringify({ message: '没有要删除的项' }), { status: 400 });
     }
     const placeholders = keysToDelete.map(() => '?').join(',');
-    await DATABASE.prepare(`DELETE FROM media WHERE file_path IN (${placeholders})`).bind(...keysToDelete).run();
+    await DATABASE.prepare(`DELETE FROM media WHERE url IN (${placeholders})`).bind(...keysToDelete).run();
     return new Response(JSON.stringify({ message: '删除成功' }), { status: 200 });
   } catch (error) {
     console.error('删除图片时出错:', error);
