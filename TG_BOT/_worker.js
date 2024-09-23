@@ -445,11 +445,11 @@ function isValidCredentials(authHeader, USERNAME, PASSWORD) {
 
 async function generateAdminPage(DATABASE) {
   const mediaData = await fetchMediaData(DATABASE);
-  const mediaHtml = mediaData.map(({ key, url, timestamp }) => {
+  const mediaHtml = mediaData.map(({timestamp, url }) => {
     const fileExtension = url.split('.').pop().toLowerCase();
     if (fileExtension === 'mp4') {
       return `
-      <div class="media-container" data-key="${key}" onclick="toggleImageSelection(this)">
+      <div class="media-container" data-key="${url}" onclick="toggleImageSelection(this)">
         <div class="media-type">视频</div>
         <video class="gallery-video" style="width: 100%; height: 100%; object-fit: contain;" data-src="${url}" controls>
           <source src="${url}" type="video/mp4">
@@ -460,7 +460,7 @@ async function generateAdminPage(DATABASE) {
       `;
     } else {
       return `
-      <div class="image-container" data-key="${key}" onclick="toggleImageSelection(this)">
+      <div class="image-container" data-key="${url}" onclick="toggleImageSelection(this)">
         <img data-src="${url}" alt="Image" class="gallery-image lazy">
         <div class="upload-time">上传时间: ${new Date(timestamp).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}</div>
       </div>
