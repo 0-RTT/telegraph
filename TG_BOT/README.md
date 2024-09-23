@@ -28,8 +28,8 @@
 ### 数据库初始化指令
 ```
 CREATE TABLE media (
-    timestamp INTEGER NOT NULL,
-    url TEXT PRIMARY KEY
+    fileId TEXT PRIMARY KEY,
+    url TEXT NOT NULL
 );
 ```
 
