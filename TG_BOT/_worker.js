@@ -447,8 +447,7 @@ async function generateAdminPage(DATABASE) {
   const mediaData = await fetchMediaData(DATABASE);
   const mediaHtml = mediaData.map(({ url }) => {
     const fileExtension = url.split('.').pop().toLowerCase();
-    const timestamp = url.split('/').pop().split('.')[0]; // 从 URL 中提取时间戳
-
+    const timestamp = url.split('/').pop().split('.')[0];
     if (fileExtension === 'mp4') {
       return `
       <div class="media-container" data-key="${url}" onclick="toggleImageSelection(this)">
@@ -685,10 +684,19 @@ async function generateAdminPage(DATABASE) {
 }
 
 async function fetchMediaData(DATABASE) {
-  const result = await DATABASE.prepare('SELECT fileId, url FROM media ORDER BY url DESC').all();
-  return result.results.map(row => ({
-    fileId: row.fileId,
-    url: row.url
+  const result = await DATABASE.prepare('SELECT fileId, url FROM media').all();
+  const mediaData = result.results.map(row => {
+    const timestamp = parseInt(row.url.split('/').pop().split('.')[0]);
+    return {
+      fileId: row.fileId,
+      url: row.url,
+      timestamp: timestamp
+    };
+  });
+  mediaData.sort((a, b) => b.timestamp - a.timestamp);
+  return mediaData.map(({ fileId, url }) => ({
+    fileId,
+    url
   }));
 }
 
@@ -700,12 +708,10 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
     if (enableAuth && !authenticate(request, USERNAME, PASSWORD)) {
       return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Admin"' } });
     }
-
     const uploadFormData = new FormData();
     uploadFormData.append("chat_id", TG_CHAT_ID);
     let method;
     let fileId;
-
     if (file.type.startsWith('video/')) {
       uploadFormData.append("video", file);
       method = 'sendVideo';
@@ -716,17 +722,14 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
       uploadFormData.append("photo", file);
       method = 'sendPhoto';
     }
-
     const telegramResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/${method}`, {
       method: 'POST',
       body: uploadFormData
     });
-
     if (!telegramResponse.ok) {
       const errorData = await telegramResponse.json();
       throw new Error(errorData.description || '上传到 Telegram 失败');
     }
-
     const responseData = await telegramResponse.json();
     if (file.type.startsWith('video/')) {
       const video = responseData.result.video;
@@ -746,14 +749,10 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
         }).file_id;
       }
     }
-
     const fileExtension = file.name.split('.').pop();
     const timestamp = Date.now();
     const imageURL = `https://${domain}/${timestamp}.${fileExtension}`;
-
-    // 存储 fileId 和 imageURL 到数据库
     await DATABASE.prepare('INSERT OR IGNORE INTO media (fileId, url) VALUES (?, ?)').bind(fileId, imageURL).run();
-
     return new Response(JSON.stringify({ data: imageURL }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
@@ -765,22 +764,18 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
 }
 
 async function handleImageRequest(request, DATABASE, TG_BOT_TOKEN) {
-  const requestedUrl = request.url; // 直接使用请求的 URL
+  const requestedUrl = request.url;
   const result = await DATABASE.prepare('SELECT fileId FROM media WHERE url = ?').bind(requestedUrl).first();
-
   if (result) {
-    const fileId = result.fileId; // 从数据库中获取 fileId
+    const fileId = result.fileId;
     const getFileResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/getFile?file_id=${fileId}`);
-    
     if (!getFileResponse.ok) {
       return new Response(null, { status: 404 });
     }
-    
     const fileData = await getFileResponse.json();
     const filePath = fileData.result.file_path;
     const telegramFileUrl = `https://api.telegram.org/file/bot${TG_BOT_TOKEN}/${filePath}`;
     const response = await fetch(telegramFileUrl);
-    
     if (response.ok) {
       const fileExtension = requestedUrl.split('.').pop();
       let contentType = 'text/plain';
@@ -796,8 +791,7 @@ async function handleImageRequest(request, DATABASE, TG_BOT_TOKEN) {
       return new Response(null, { status: 404 });
     }
   }
-  
-  return new Response(null, { status: 404 }); // 如果没有匹配的记录，返回 404
+  return new Response(null, { status: 404 });
 }
 
 async function handleBingImagesRequest() {
@@ -827,7 +821,7 @@ async function handleDeleteImagesRequest(request, DATABASE) {
       return new Response(JSON.stringify({ message: '没有要删除的项' }), { status: 400 });
     }
     const placeholders = keysToDelete.map(() => '?').join(',');
-    await DATABASE.prepare(`DELETE FROM media WHERE fileId IN (${placeholders})`).bind(...keysToDelete).run();
+    await DATABASE.prepare(`DELETE FROM media WHERE url IN (${placeholders})`).bind(...keysToDelete).run();
     return new Response(JSON.stringify({ message: '删除成功' }), { status: 200 });
   } catch (error) {
     console.error('删除图片时出错:', error);
