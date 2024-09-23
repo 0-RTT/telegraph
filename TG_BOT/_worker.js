@@ -539,7 +539,7 @@ async function generateAdminPage(DATABASE) {
       .gallery-image {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
         transition: opacity 0.3s;
         opacity: 0;
       }
@@ -577,11 +577,11 @@ async function generateAdminPage(DATABASE) {
           grid-template-columns: repeat(2, 1fr);
         }
         .header {
-          flex-direction: column;
-          align-items: flex-start;
+          flex-direction: row;
+          align-items: center;
         }
         .header-right {
-          margin-top: 10px;
+          margin-left: auto;
         }
         .footer {
           font-size: 16px;
@@ -663,10 +663,10 @@ async function generateAdminPage(DATABASE) {
     <body>
       <div class="header">
         <div class="header-left">
-          <span>当前共有 ${mediaData.length} 个媒体文件</span>
+          <span>媒体文件 ${mediaData.length} 个</span>
+          <span>已选中: <span id="selected-count">0</span>个</span>
         </div>
-        <div class="header-right hidden">
-          <span>选中数量: <span id="selected-count">0</span></span>
+        <div class="header-right hidden">          
           <button id="delete-button" class="delete-button" onclick="deleteSelectedImages()">删除选中</button>
         </div>
       </div>
