@@ -231,16 +231,13 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
                 videoMaxSize: 20 * 1024 * 1024,
               };
               const acceptedTypes = interfaceInfo.acceptTypes.split(',');
-        
               const isAcceptedType = acceptedTypes.some(type => {
                 return type.includes('*') ? file.type.startsWith(type.split('/')[0]) : file.type === type;
               });
-        
-              if (!isAcceptedType) {
-                toastr.error('仅支持图片或视频格式的文件。');
+              if (file.type === 'image/gif' || !isAcceptedType) {
+                toastr.error('仅支持除 GIF 外的图片或视频格式的文件。');
                 return;
               }
-        
               if (file.type.startsWith('image/') && file.size > interfaceInfo.imageMaxSize) {
                 toastr.info('正在压缩...', '', { timeOut: 0 });
                 const compressedFile = await compressImage(file);
@@ -249,12 +246,10 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
                 toastr.error('视频文件必须≤20MB');
                 return;
               }
-        
               const formData = new FormData($('#uploadForm')[0]);
               formData.set('file', file, file.name);
               const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
               const responseData = await handleUploadResponse(uploadResponse);
-        
               if (responseData.error) {
                 toastr.error(responseData.error);
               } else {
@@ -272,7 +267,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
             } finally {
               toastr.clear();
             }
-          }
+          }                    
         
           async function handleUploadResponse(response) {
             if (response.ok) {
@@ -715,9 +710,6 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
     if (file.type.startsWith('video/')) {
       uploadFormData.append("video", file);
       method = 'sendVideo';
-    } else if (file.type === 'image/gif') {
-      uploadFormData.append("animation", file);
-      method = 'sendAnimation';
     } else {
       uploadFormData.append("photo", file);
       method = 'sendPhoto';
@@ -735,11 +727,6 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
       const video = responseData.result.video;
       if (video) {
         fileId = video.file_id;
-      }
-    } else if (file.type === 'image/gif') {
-      const document = responseData.result.document;
-      if (document) {
-        fileId = document.file_id;
       }
     } else {
       const photos = responseData.result.photo;
