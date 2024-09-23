@@ -44,7 +44,7 @@ TG_BOT的部署参考telegraph的，需要额外获取```TG_BOT_TOKEN```和```TG
 
 ![image](https://kycloud3.koyoo.cn/202408290028f20240829111205448.png)  
 
-#### 2、下载对应文件夹下的_worker.js，打包成zip部署到pages
+#### 2、下载对应文件夹下的_worker.js，打包成zip部署到pages。如果通过fork仓库部署，需要设置一下输出目录为TG_BOT。
 
 ![image](https://kycloud3.koyoo.cn/20240906d561b202409061706196490.png)  
 
