@@ -12,7 +12,7 @@
 | `TG_BOT_TOKEN` | 通过 @BotFather 获取的 Telegram 机器人令牌。                        |
 | `TG_CHAT_ID`   | 填账号的ID机器人就发给你，填频道或者群组的，机器人就发到频道或者群组，最终的文件链接是一样的。 |
 
-访问```https://api.telegram.org/bot<YourBotToken>/getUpdates```可以获取用户ID或者频道ID。```<YourBotToken>```替换为你的```TG_BOT_TOKEN```
+使用机器人@VersaToolsBot获取ID，将你和机器人或者频道的消息转发给机器人即可！
 
 在绑定数据库的时候使用
 | 变量名    | 说明                                      |
