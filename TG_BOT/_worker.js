@@ -238,27 +238,59 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
                 toastr.error('仅支持除 GIF 外的图片或视频格式的文件。');
                 return;
               }
-              if (file.type.startsWith('image/') && file.size > interfaceInfo.imageMaxSize) {
-                toastr.info('正在压缩...', '', { timeOut: 0 });
-                const compressedFile = await compressImage(file);
-                file = compressedFile;
+              if (file.type.startsWith('image/')) {
+                const image = new Image();
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                  image.src = event.target.result;
+                  image.onload = async () => {
+                    const resolution = image.width * image.height;
+                    let shouldCompress = false;
+                    if (resolution > 25000000) {
+                      shouldCompress = true;
+                    } else if (file.size > interfaceInfo.imageMaxSize) {
+                      shouldCompress = true;
+                    }
+                    if (shouldCompress) {
+                      toastr.info('正在压缩...', '', { timeOut: 0 });
+                      const compressedFile = await compressImage(file);
+                      file = compressedFile;
+                    }
+                    const formData = new FormData($('#uploadForm')[0]);
+                    formData.set('file', file, file.name);
+                    const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
+                    const responseData = await handleUploadResponse(uploadResponse);
+                    if (responseData.error) {
+                      toastr.error(responseData.error);
+                    } else {
+                      originalImageURLs.push(responseData.data);
+                      $('#fileLink').val(originalImageURLs.join('\\n\\n'));
+                      $('.form-group').show();
+                      adjustTextareaHeight($('#fileLink')[0]);
+                      toastr.success('文件上传成功！');
+                      saveToLocalCache(responseData.data, file.name);
+                    }
+                  };
+                };
+                reader.readAsDataURL(file);
               } else if (file.type.startsWith('video/') && file.size > interfaceInfo.videoMaxSize) {
                 toastr.error('视频文件必须≤20MB');
                 return;
-              }
-              const formData = new FormData($('#uploadForm')[0]);
-              formData.set('file', file, file.name);
-              const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
-              const responseData = await handleUploadResponse(uploadResponse);
-              if (responseData.error) {
-                toastr.error(responseData.error);
               } else {
-                originalImageURLs.push(responseData.data);
-                $('#fileLink').val(originalImageURLs.join('\\n\\n'));
-                $('.form-group').show();
-                adjustTextareaHeight($('#fileLink')[0]);
-                toastr.success('文件上传成功！');
-                saveToLocalCache(responseData.data, file.name);
+                const formData = new FormData($('#uploadForm')[0]);
+                formData.set('file', file, file.name);
+                const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
+                const responseData = await handleUploadResponse(uploadResponse);
+                if (responseData.error) {
+                  toastr.error(responseData.error);
+                } else {
+                  originalImageURLs.push(responseData.data);
+                  $('#fileLink').val(originalImageURLs.join('\\n\\n'));
+                  $('.form-group').show();
+                  adjustTextareaHeight($('#fileLink')[0]);
+                  toastr.success('文件上传成功！');
+                  saveToLocalCache(responseData.data, file.name);
+                }
               }
             } catch (error) {
               console.error('处理文件时出现错误:', error);
@@ -267,7 +299,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
             } finally {
               toastr.clear();
             }
-          }                    
+          }          
         
           async function handleUploadResponse(response) {
             if (response.ok) {
