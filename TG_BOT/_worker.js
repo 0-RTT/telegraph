@@ -773,7 +773,11 @@ async function handleImageRequest(request, DATABASE, TG_BOT_TOKEN) {
       } else if (fileExtension === 'mp4') {
         contentType = 'video/mp4';
       }
-      return new Response(response.body, { status: response.status, headers: { 'Content-Type': contentType } });
+      const headers = new Headers(response.headers);
+      headers.set('Content-Type', contentType);
+      headers.set('Cache-Control', 'public, max-age=3600');
+      headers.set('Content-Disposition', 'inline');
+      return new Response(response.body, { status: response.status, headers });
     } else {
       return new Response(null, { status: 404 });
     }
