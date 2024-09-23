@@ -700,12 +700,19 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
     }
     const uploadFormData = new FormData();
     uploadFormData.append("chat_id", TG_CHAT_ID);
+    let method;
+    let fileId;
     if (file.type.startsWith('video/')) {
       uploadFormData.append("video", file);
+      method = 'sendVideo';
+    } else if (file.type === 'image/gif') {
+      uploadFormData.append("animation", file);
+      method = 'sendAnimation';
     } else {
       uploadFormData.append("photo", file);
+      method = 'sendPhoto';
     }
-    const telegramResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/send${file.type.startsWith('video/') ? 'Video' : 'Photo'}`, {
+    const telegramResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/${method}`, {
       method: 'POST',
       body: uploadFormData
     });
@@ -714,9 +721,24 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
       throw new Error(errorData.description || '上传到 Telegram 失败');
     }
     const responseData = await telegramResponse.json();
-    const fileId = file.type.startsWith('video/') 
-      ? responseData.result.video.file_id 
-      : responseData.result.photo[responseData.result.photo.length - 1].file_id;
+    if (file.type.startsWith('video/')) {
+      const video = responseData.result.video;
+      if (video) {
+        fileId = video.file_id;
+      }
+    } else if (file.type === 'image/gif') {
+      const document = responseData.result.document;
+      if (document) {
+        fileId = document.file_id;
+      }
+    } else {
+      const photos = responseData.result.photo;
+      if (photos && photos.length > 0) {
+        fileId = photos.reduce((max, photo) => {
+          return photo.file_size > max.file_size ? photo : max;
+        }).file_id;
+      }
+    }
     const fileExtension = file.name.split('.').pop();
     const timestamp = Date.now();
     const imageURL = `https://${domain}/${fileId}.${fileExtension}`;
