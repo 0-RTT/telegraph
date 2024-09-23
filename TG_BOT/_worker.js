@@ -807,7 +807,7 @@ async function handleImageRequest(request, DATABASE, TG_BOT_TOKEN) {
       }
       const headers = new Headers(response.headers);
       headers.set('Content-Type', contentType);
-      headers.set('Cache-Control', 'public, max-age=3600');
+      headers.set('Cache-Control', 'public, max-age=604800');
       headers.set('Content-Disposition', 'inline');
       return new Response(response.body, { status: response.status, headers });
     } else {
