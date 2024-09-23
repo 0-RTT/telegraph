@@ -720,11 +720,7 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
     const fileExtension = file.name.split('.').pop();
     const timestamp = Date.now();
     const imageURL = `https://${domain}/${fileId}.${fileExtension}`;
-    const existingRecord = await DATABASE.prepare('SELECT url FROM media WHERE url = ?').bind(imageURL).first();
-    if (existingRecord) {
-      return new Response(JSON.stringify({ data: existingRecord.url }), { status: 200, headers: { 'Content-Type': 'application/json' } });
-    }
-    await DATABASE.prepare('INSERT INTO media (timestamp, url) VALUES (?, ?)').bind(timestamp, imageURL).run();
+    await DATABASE.prepare('INSERT OR IGNORE INTO media (timestamp, url) VALUES (?, ?)').bind(timestamp, imageURL).run();
     return new Response(JSON.stringify({ data: imageURL }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
