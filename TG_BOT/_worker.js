@@ -227,70 +227,39 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
               toastr.info('上传中...', '', { timeOut: 0 });
               const interfaceInfo = {
                 acceptTypes: 'image/*,video/*',
-                imageMaxSize: 10 * 1024 * 1024,
-                videoMaxSize: 20 * 1024 * 1024,
+                maxFileSize: 20 * 1024 * 1024
               };
               const acceptedTypes = interfaceInfo.acceptTypes.split(',');
               const isAcceptedType = acceptedTypes.some(type => {
                 return type.includes('*') ? file.type.startsWith(type.split('/')[0]) : file.type === type;
               });
-              if (file.type === 'image/gif' || !isAcceptedType) {
-                toastr.error('仅支持除 GIF 外的图片或视频格式的文件。');
+              if (!isAcceptedType) {
+                toastr.error('仅支持图片或视频格式的文件。');
                 return;
               }
-              if (file.type.startsWith('image/')) {
-                const image = new Image();
-                const reader = new FileReader();
-                reader.onload = async (event) => {
-                  image.src = event.target.result;
-                  image.onload = async () => {
-                    const resolution = image.width * image.height;
-                    let shouldCompress = false;
-                    if (resolution > 25000000) {
-                      shouldCompress = true;
-                    } else if (file.size > interfaceInfo.imageMaxSize) {
-                      shouldCompress = true;
-                    }
-                    if (shouldCompress) {
-                      toastr.info('正在压缩...', '', { timeOut: 0 });
-                      const compressedFile = await compressImage(file);
-                      file = compressedFile;
-                    }
-                    const formData = new FormData($('#uploadForm')[0]);
-                    formData.set('file', file, file.name);
-                    const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
-                    const responseData = await handleUploadResponse(uploadResponse);
-                    if (responseData.error) {
-                      toastr.error(responseData.error);
-                    } else {
-                      originalImageURLs.push(responseData.data);
-                      $('#fileLink').val(originalImageURLs.join('\\n\\n'));
-                      $('.form-group').show();
-                      adjustTextareaHeight($('#fileLink')[0]);
-                      toastr.success('文件上传成功！');
-                      saveToLocalCache(responseData.data, file.name);
-                    }
-                  };
-                };
-                reader.readAsDataURL(file);
-              } else if (file.type.startsWith('video/') && file.size > interfaceInfo.videoMaxSize) {
-                toastr.error('视频文件必须≤20MB');
-                return;
-              } else {
-                const formData = new FormData($('#uploadForm')[0]);
-                formData.set('file', file, file.name);
-                const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
-                const responseData = await handleUploadResponse(uploadResponse);
-                if (responseData.error) {
-                  toastr.error(responseData.error);
+              if (file.size > interfaceInfo.maxFileSize) {
+                if (file.type.startsWith('video/') || file.type === 'image/gif') {
+                  toastr.error('文件必须≤20MB');
+                  return;
                 } else {
-                  originalImageURLs.push(responseData.data);
-                  $('#fileLink').val(originalImageURLs.join('\\n\\n'));
-                  $('.form-group').show();
-                  adjustTextareaHeight($('#fileLink')[0]);
-                  toastr.success('文件上传成功！');
-                  saveToLocalCache(responseData.data, file.name);
+                  toastr.info('正在压缩...', '', { timeOut: 0 });
+                  const compressedFile = await compressImage(file);
+                  file = compressedFile;
                 }
+              }
+              const formData = new FormData($('#uploadForm')[0]);
+              formData.set('file', file, file.name);
+              const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
+              const responseData = await handleUploadResponse(uploadResponse);
+              if (responseData.error) {
+                toastr.error(responseData.error);
+              } else {
+                originalImageURLs.push(responseData.data);
+                $('#fileLink').val(originalImageURLs.join('\\n\\n'));
+                $('.form-group').show();
+                adjustTextareaHeight($('#fileLink')[0]);
+                toastr.success('文件上传成功！');
+                saveToLocalCache(responseData.data, file.name);
               }
             } catch (error) {
               console.error('处理文件时出现错误:', error);
@@ -737,16 +706,15 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
     }
     const uploadFormData = new FormData();
     uploadFormData.append("chat_id", TG_CHAT_ID);
-    let method;
     let fileId;
-    if (file.type.startsWith('video/')) {
-      uploadFormData.append("video", file);
-      method = 'sendVideo';
+    if (file.type.startsWith('image/gif')) {
+      const newFileName = file.name.replace(/\.gif$/, '.jpeg');
+      const newFile = new File([file], newFileName, { type: 'image/jpeg' });
+      uploadFormData.append("document", newFile);
     } else {
-      uploadFormData.append("photo", file);
-      method = 'sendPhoto';
+      uploadFormData.append("document", file);
     }
-    const telegramResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/${method}`, {
+    const telegramResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendDocument`, {
       method: 'POST',
       body: uploadFormData
     });
@@ -755,19 +723,7 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
       throw new Error(errorData.description || '上传到 Telegram 失败');
     }
     const responseData = await telegramResponse.json();
-    if (file.type.startsWith('video/')) {
-      const video = responseData.result.video;
-      if (video) {
-        fileId = video.file_id;
-      }
-    } else {
-      const photos = responseData.result.photo;
-      if (photos && photos.length > 0) {
-        fileId = photos.reduce((max, photo) => {
-          return photo.file_size > max.file_size ? photo : max;
-        }).file_id;
-      }
-    }
+    fileId = responseData.result.document.file_id;
     const fileExtension = file.name.split('.').pop();
     const timestamp = Date.now();
     const imageURL = `https://${domain}/${timestamp}.${fileExtension}`;
@@ -796,12 +752,14 @@ async function handleImageRequest(request, DATABASE, TG_BOT_TOKEN) {
     const telegramFileUrl = `https://api.telegram.org/file/bot${TG_BOT_TOKEN}/${filePath}`;
     const response = await fetch(telegramFileUrl);
     if (response.ok) {
-      const fileExtension = requestedUrl.split('.').pop();
+      const fileExtension = requestedUrl.split('.').pop().toLowerCase();
       let contentType = 'text/plain';
       if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
         contentType = 'image/jpeg';
       } else if (fileExtension === 'png') {
         contentType = 'image/png';
+      } else if (fileExtension === 'gif') {
+        contentType = 'image/gif';
       } else if (fileExtension === 'mp4') {
         contentType = 'video/mp4';
       }
