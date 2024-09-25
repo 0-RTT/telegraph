@@ -1,6 +1,5 @@
 # 介绍
-
-基于Cloudflare Workers和Pages的图床程序。
+基于 Cloudflare Worker 和 Pages 的 Telegraph 图床，轻松实现无服务器部署！
 
 # 日志
 20240923 修复链接失效的问题，支持视频文件上传。
