@@ -1,16 +1,26 @@
 # 介绍
 基于 Cloudflare Worker 和 Pages 的 Telegraph 图床，轻松实现无服务器部署！
 
-# 日志
-20240923 修复链接失效的问题，支持视频文件上传。
+# 更新日志
 
-20240914 Telegraph接口上传的文件有**时效性**，建议使用TG_BOT上传。
+## 2024年9月25日
+- 修复GIF文件上传的问题，感谢 [nodeseek](https://www.nodeseek.com/) 用户 [ @Libs](https://www.nodeseek.com/space/7214#/general) 提供的思路。
+- Telegraph接口移到了telegraph分支，main分支为TG_BOT接口，可以通过直接fork仓库部署到pages。
 
-20240913 支持通过TG_BOT上传到频道。
+## 2024年9月23日
+- 修复链接失效的问题，支持视频文件上传。
 
-20240912 已修复，可正常上传到telegraph。
+## 2024年9月14日
+- Telegraph接口上传的文件有**时效性**，建议使用TG_BOT上传。
 
-~~2024年9月6号起telegra.ph禁止了上传媒体文件，此项目终结。~~
+## 2024年9月13日
+- 支持通过TG_BOT上传到频道。
+
+## 2024年9月12日
+- 已修复，可正常上传到telegraph。
+
+## 2024年9月6日
+> ~~2024年9月6日起 telegra.ph 禁止了上传媒体文件，此项目终结。~~
 
 # 功能
 
