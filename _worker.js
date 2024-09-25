@@ -723,7 +723,13 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
       throw new Error(errorData.description || '上传到 Telegram 失败');
     }
     const responseData = await telegramResponse.json();
-    fileId = responseData.result.document.file_id;
+    if (responseData.result.video) {
+      fileId = responseData.result.video.file_id;
+    } else if (responseData.result.document) {
+      fileId = responseData.result.document.file_id;
+    } else {
+      throw new Error('返回的数据中没有文件 ID');
+    }
     const fileExtension = file.name.split('.').pop();
     const timestamp = Date.now();
     const imageURL = `https://${domain}/${timestamp}.${fileExtension}`;
