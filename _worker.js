@@ -45,27 +45,27 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
   return new Response(`
   <!DOCTYPE html>
   <html lang="zh-CN">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="description" content="Telegraph图床-基于Workers的图床服务">
-      <meta name="keywords" content="Telegraph图床,Workers图床, Cloudflare, Workers,telegra.ph, 图床">
-      <title>Telegraph图床-基于Workers的图床服务</title>
-      <link rel="icon" href="https://p1.meituan.net/csc/c195ee91001e783f39f41ffffbbcbd484286.ico" type="image/x-icon">
-      <link href="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/twitter-bootstrap/4.6.1/css/bootstrap.min.css" rel="stylesheet" />
-      <link href="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/css/fileinput.min.css" rel="stylesheet" />
-      <link href="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/toastr.js/2.1.4/toastr.min.css" rel="stylesheet" />
-      <link href="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/font-awesome/5.15.4/css/all.min.css" type="text/css" rel="stylesheet" />
-      <style>
-        body {
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Telegraph图床-基于Workers的图床服务">
+  <meta name="keywords" content="Telegraph图床,Workers图床, Cloudflare, Workers,telegra.ph, 图床">
+  <title>Telegraph图床-基于Workers的图床服务</title>
+  <link rel="icon" href="https://p1.meituan.net/csc/c195ee91001e783f39f41ffffbbcbd484286.ico" type="image/x-icon">
+  <link href="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/twitter-bootstrap/4.6.1/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/css/fileinput.min.css" rel="stylesheet" />
+  <link href="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/toastr.js/2.1.4/toastr.min.css" rel="stylesheet" />
+  <link href="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/font-awesome/5.15.4/css/all.min.css" type="text/css" rel="stylesheet" />
+  <style>
+      body {
           margin: 0;
           display: flex;
           justify-content: center;
           align-items: center;
           height: 100vh;
           position: relative;
-        }
-        .background {
+      }
+      .background {
           position: absolute;
           top: 0;
           left: 0;
@@ -75,8 +75,8 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
           z-index: -1;
           transition: opacity 1s ease-in-out;
           opacity: 1;
-        }
-        .card {
+      }
+      .card {
           background-color: rgba(255, 255, 255, 0.8);
           border: none;
           border-radius: 10px;
@@ -87,11 +87,11 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
           text-align: center;
           margin: 0 auto;
           position: relative;
-        }
-        .uniform-height {
+      }
+      .uniform-height {
           margin-top: 20px;
-        }
-        #viewCacheBtn {
+      }
+      #viewCacheBtn {
           position: absolute;
           top: 10px;
           right: 10px;
@@ -101,21 +101,21 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
           cursor: pointer;
           font-size: 24px;
           transition: color 0.3s ease;
-        }
-        #viewCacheBtn:hover {
+      }
+      #viewCacheBtn:hover {
           color: rgba(0, 0, 0, 0.4);
-        }
-        #cacheContent {
+      }
+      #cacheContent {
           margin-top: 20px;
-          max-height: 40vh;
+          max-height: 200px;
           border-radius: 5px;
           overflow-y: auto;
-        }
-        .cache-title {
+      }
+      .cache-title {
           text-align: left;
           margin-bottom: 10px;
-        }
-        .cache-item {
+      }
+      .cache-item {
           display: block;
           cursor: pointer;
           border-radius: 4px;
@@ -123,303 +123,311 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
           transition: background-color 0.3s ease;
           text-align: left;
           padding: 10px;
-        }
-        .cache-item:hover {
+      }
+      .cache-item:hover {
           background-color: #e9ecef;
-        }
-        .project-link {
+      }
+      .project-link {
           font-size: 14px;
           text-align: center;
           margin-top: 5px;
           margin-bottom: 0;
-        }
-        textarea.form-control {
-          overflow: hidden;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="background" id="background"></div>
-      <div class="card">
-        <div class="title">Telegraph图床</div>
-        <button type="button" class="btn" id="viewCacheBtn" title="查看历史记录"><i class="fas fa-clock"></i></button>
-        <div class="card-body">
+      }
+      textarea.form-control {
+          max-height: 200px;
+          overflow-y: hidden;
+          resize: none;
+      }
+  </style>
+</head>
+<body>
+  <div class="background" id="background"></div>
+  <div class="card">
+      <div class="title">Telegraph图床</div>
+      <button type="button" class="btn" id="viewCacheBtn" title="查看历史记录"><i class="fas fa-clock"></i></button>
+      <div class="card-body">
           <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-            <div class="file-input-container">
-              <input id="fileInput" name="file" type="file" class="form-control-file" data-browse-on-zone-click="true" multiple>
-            </div>
-            <div class="form-group mb-3 uniform-height" style="display: none;">
-              <button type="button" class="btn btn-light mr-2" id="urlBtn">URL</button>
-              <button type="button" class="btn btn-light mr-2" id="bbcodeBtn">BBCode</button>
-              <button type="button" class="btn btn-light" id="markdownBtn">Markdown</button>
-            </div>
-            <div class="form-group mb-3 uniform-height" style="display: none;">
-              <textarea class="form-control" id="fileLink" readonly></textarea>
-            </div>
-            <div id="cacheContent" style="display: none;"></div>
+              <div class="file-input-container">
+                  <input id="fileInput" name="file" type="file" class="form-control-file" data-browse-on-zone-click="true" multiple>
+              </div>
+              <div class="form-group mb-3 uniform-height" style="display: none;">
+                  <button type="button" class="btn btn-light mr-2" id="urlBtn">URL</button>
+                  <button type="button" class="btn btn-light mr-2" id="bbcodeBtn">BBCode</button>
+                  <button type="button" class="btn btn-light" id="markdownBtn">Markdown</button>
+              </div>
+              <div class="form-group mb-3 uniform-height" style="display: none;">
+                  <textarea class="form-control" id="fileLink" readonly></textarea>
+              </div>
+              <div id="cacheContent" style="display: none;"></div>
           </form>
-        </div>
-        <p class="project-link">项目开源于 GitHub - <a href="https://github.com/0-RTT/telegraph" target="_blank" rel="noopener noreferrer">0-RTT/telegraph</a></p>
-        <script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/jquery/3.6.0/jquery.min.js" type="application/javascript"></script>
-        <script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/js/fileinput.min.js" type="application/javascript"></script>
-        <script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/js/locales/zh.min.js" type="application/javascript"></script>
-        <script src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/toastr.js/2.1.4/toastr.min.js" type="application/javascript"></script>
-        <script>
-        async function fetchBingImages() {
-          const response = await fetch('/bing-images');
-          const data = await response.json();
-          return data.data.map(image => image.url);
-        }
-        
-        async function setBackgroundImages() {
-          const images = await fetchBingImages();
-          const backgroundDiv = document.getElementById('background');
-          if (images.length > 0) {
-            backgroundDiv.style.backgroundImage = 'url(' + images[0] + ')';
+      </div>
+      <p class="project-link">项目开源于 GitHub - <a href="https://github.com/0-RTT/telegraph" target="_blank" rel="noopener noreferrer">0-RTT/telegraph</a></p>
+      <script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/jquery/3.6.0/jquery.min.js" type="application/javascript"></script>
+      <script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/js/fileinput.min.js" type="application/javascript"></script>
+      <script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap-fileinput/5.2.7/js/locales/zh.min.js" type="application/javascript"></script>
+      <script src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/toastr.js/2.1.4/toastr.min.js" type="application/javascript"></script>
+      <script>
+          async function fetchBingImages() {
+              const response = await fetch('/bing-images');
+              const data = await response.json();
+              return data.data.map(image => image.url);
           }
-          let index = 0;
-          let currentBackgroundDiv = backgroundDiv;
-          setInterval(() => {
-            const nextIndex = (index + 1) % images.length;
-            const nextBackgroundDiv = document.createElement('div');
-            nextBackgroundDiv.className = 'background next';
-            nextBackgroundDiv.style.backgroundImage = 'url(' + images[nextIndex] + ')';
-            document.body.appendChild(nextBackgroundDiv);
-            nextBackgroundDiv.style.opacity = 0;
-            setTimeout(() => {
-              nextBackgroundDiv.style.opacity = 1;
-            }, 50);
-            setTimeout(() => {
-              document.body.removeChild(currentBackgroundDiv);
-              currentBackgroundDiv = nextBackgroundDiv;
-              index = nextIndex;
-            }, 1000);
-          }, 5000);
-        }
-        
-        $(document).ready(function() {
-          let originalImageURLs = [];
-          let isCacheVisible = false;
-          initFileInput();
-          setBackgroundImages();
-        
-          function initFileInput() {
-            $("#fileInput").fileinput({
-              theme: 'fa',
-              language: 'zh',
-              browseClass: "btn btn-primary",
-              removeClass: "btn btn-danger",
-              showUpload: false,
-              showPreview: false,
-            }).on('filebatchselected', handleFileSelection)
-              .on('fileclear', handleFileClear);
+
+          async function setBackgroundImages() {
+              const images = await fetchBingImages();
+              const backgroundDiv = document.getElementById('background');
+              if (images.length > 0) {
+                  backgroundDiv.style.backgroundImage = 'url(' + images[0] + ')';
+              }
+              let index = 0;
+              let currentBackgroundDiv = backgroundDiv;
+              setInterval(() => {
+                  const nextIndex = (index + 1) % images.length;
+                  const nextBackgroundDiv = document.createElement('div');
+                  nextBackgroundDiv.className = 'background next';
+                  nextBackgroundDiv.style.backgroundImage = 'url(' + images[nextIndex] + ')';
+                  document.body.appendChild(nextBackgroundDiv);
+                  nextBackgroundDiv.style.opacity = 0;
+                  setTimeout(() => {
+                      nextBackgroundDiv.style.opacity = 1;
+                  }, 50);
+                  setTimeout(() => {
+                      document.body.removeChild(currentBackgroundDiv);
+                      currentBackgroundDiv = nextBackgroundDiv;
+                      index = nextIndex;
+                  }, 1000);
+              }, 5000);
           }
-        
-          async function handleFileSelection() {
-            const files = $('#fileInput')[0].files;
-            for (let i = 0; i < files.length; i++) {
-              await uploadFile(files[i]);
-            }
-          }
-        
-          async function uploadFile(file) {
-            try {
-              toastr.info('上传中...', '', { timeOut: 0 });
-              const interfaceInfo = {
-                acceptTypes: 'image/*,video/*',
-                maxFileSize: 20 * 1024 * 1024
-              };
-              const acceptedTypes = interfaceInfo.acceptTypes.split(',');
-              const isAcceptedType = acceptedTypes.some(type => {
-                return type.includes('*') ? file.type.startsWith(type.split('/')[0]) : file.type === type;
+
+          $(document).ready(function() {
+              let originalImageURLs = [];
+              let isCacheVisible = false;
+              initFileInput();
+              setBackgroundImages();
+
+              function initFileInput() {
+                  $("#fileInput").fileinput({
+                      theme: 'fa',
+                      language: 'zh',
+                      browseClass: "btn btn-primary",
+                      removeClass: "btn btn-danger",
+                      showUpload: false,
+                      showPreview: false,
+                  }).on('filebatchselected', handleFileSelection)
+                    .on('fileclear', handleFileClear);
+              }
+
+              async function handleFileSelection() {
+                  const files = $('#fileInput')[0].files;
+                  for (let i = 0; i < files.length; i++) {
+                      await uploadFile(files[i]);
+                  }
+              }
+
+              async function uploadFile(file) {
+                  try {
+                      toastr.info('上传中...', '', { timeOut: 0 });
+                      const interfaceInfo = {
+                          acceptTypes: 'image/*,video/*',
+                          maxFileSize: 20 * 1024 * 1024
+                      };
+                      const acceptedTypes = interfaceInfo.acceptTypes.split(',');
+                      const isAcceptedType = acceptedTypes.some(type => {
+                          return type.includes('*') ? file.type.startsWith(type.split('/')[0]) : file.type === type;
+                      });
+                      if (!isAcceptedType) {
+                          toastr.error('仅支持图片或视频格式的文件。');
+                          return;
+                      }
+                      if (file.size > interfaceInfo.maxFileSize) {
+                          if (file.type.startsWith('video/') || file.type === 'image/gif') {
+                              toastr.error('文件必须≤20MB');
+                              return;
+                          } else {
+                              toastr.info('正在压缩...', '', { timeOut: 0 });
+                              const compressedFile = await compressImage(file);
+                              file = compressedFile;
+                          }
+                      }
+                      const formData = new FormData($('#uploadForm')[0]);
+                      formData.set('file', file, file.name);
+                      const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
+                      const responseData = await handleUploadResponse(uploadResponse);
+                      if (responseData.error) {
+                          toastr.error(responseData.error);
+                      } else {
+                          originalImageURLs.push(responseData.data);
+                          $('#fileLink').val(originalImageURLs.join('\\n\\n'));
+                          $('.form-group').show();
+                          adjustTextareaHeight($('#fileLink')[0]);
+                          toastr.success('文件上传成功！');
+                          saveToLocalCache(responseData.data, file.name);
+                      }
+                  } catch (error) {
+                      console.error('处理文件时出现错误:', error);
+                      $('#fileLink').val('文件处理失败！');
+                      toastr.error('文件处理失败！');
+                  } finally {
+                      toastr.clear();
+                  }
+              }
+
+              async function handleUploadResponse(response) {
+                  if (response.ok) {
+                      return await response.json();
+                  } else {
+                      const errorData = await response.json();
+                      return { error: errorData.error };
+                  }
+              }
+
+              $(document).on('paste', function(event) {
+                  const clipboardData = event.originalEvent.clipboardData;
+                  if (clipboardData && clipboardData.items) {
+                      for (let i = 0; i < clipboardData.items.length; i++) {
+                          const item = clipboardData.items[i];
+                          if (item.kind === 'file') {
+                              const pasteFile = item.getAsFile();
+                              uploadFile(pasteFile);
+                              break;
+                          }
+                      }
+                  }
               });
-              if (!isAcceptedType) {
-                toastr.error('仅支持图片或视频格式的文件。');
-                return;
+
+              async function compressImage(file, quality = 0.5, maxResolution = 20000000) {
+                  return new Promise((resolve) => {
+                      const image = new Image();
+                      image.onload = () => {
+                          const width = image.width;
+                          const height = image.height;
+                          const resolution = width * height;
+                          let scale = 1;
+                          if (resolution > maxResolution) {
+                              scale = Math.sqrt(maxResolution / resolution);
+                          }
+                          const targetWidth = Math.round(width * scale);
+                          const targetHeight = Math.round(height * scale);
+                          const canvas = document.createElement('canvas');
+                          const ctx = canvas.getContext('2d');
+                          canvas.width = targetWidth;
+                          canvas.height = targetHeight;
+                          ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
+                          canvas.toBlob((blob) => {
+                              const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
+                              toastr.success('图片压缩成功！');
+                              resolve(compressedFile);
+                          }, 'image/jpeg', quality);
+                      };
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                          image.src = event.target.result;
+                      };
+                      reader.readAsDataURL(file);
+                  });
               }
-              if (file.size > interfaceInfo.maxFileSize) {
-                if (file.type.startsWith('video/') || file.type === 'image/gif') {
-                  toastr.error('文件必须≤20MB');
-                  return;
+
+              $('#urlBtn, #bbcodeBtn, #markdownBtn').on('click', function() {
+                  const fileLinks = originalImageURLs.map(url => url.trim()).filter(url => url !== '');
+                  if (fileLinks.length > 0) {
+                      let formattedLinks = '';
+                      switch ($(this).attr('id')) {
+                          case 'urlBtn':
+                              formattedLinks = fileLinks.join('\\n\\n');
+                              break;
+                          case 'bbcodeBtn':
+                              formattedLinks = fileLinks.map(url => '[img]' + url + '[/img]').join('\\n\\n');
+                              break;
+                          case 'markdownBtn':
+                              formattedLinks = fileLinks.map(url => '![image](' + url + ')').join('\\n\\n');
+                              break;
+                          default:
+                              formattedLinks = fileLinks.join('\\n');
+                      }
+                      $('#fileLink').val(formattedLinks);
+                      adjustTextareaHeight($('#fileLink')[0]);
+                      copyToClipboardWithToastr(formattedLinks);
+                  }
+              });
+
+              function handleFileClear(event) {
+                  $('#fileLink').val('');
+                  adjustTextareaHeight($('#fileLink')[0]);
+                  hideButtonsAndTextarea();
+                  originalImageURLs = [];
+              }
+
+              function adjustTextareaHeight(textarea) {
+                textarea.style.height = '1px';
+                textarea.style.height = (textarea.scrollHeight > 200 ? 200 : textarea.scrollHeight) + 'px';
+                
+                if (textarea.scrollHeight > 200) {
+                    textarea.style.overflowY = 'auto';
                 } else {
-                  toastr.info('正在压缩...', '', { timeOut: 0 });
-                  const compressedFile = await compressImage(file);
-                  file = compressedFile;
+                    textarea.style.overflowY = 'hidden';
                 }
+            }            
+
+              function copyToClipboardWithToastr(text) {
+                  const input = document.createElement('textarea');
+                  input.value = text;
+                  document.body.appendChild(input);
+                  input.select();
+                  document.execCommand('copy');
+                  document.body.removeChild(input);
+                  toastr.success('已复制到剪贴板', '', { timeOut: 300 });
               }
-              const formData = new FormData($('#uploadForm')[0]);
-              formData.set('file', file, file.name);
-              const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
-              const responseData = await handleUploadResponse(uploadResponse);
-              if (responseData.error) {
-                toastr.error(responseData.error);
-              } else {
-                originalImageURLs.push(responseData.data);
-                $('#fileLink').val(originalImageURLs.join('\\n\\n'));
-                $('.form-group').show();
-                adjustTextareaHeight($('#fileLink')[0]);
-                toastr.success('文件上传成功！');
-                saveToLocalCache(responseData.data, file.name);
+
+              function hideButtonsAndTextarea() {
+                  $('#urlBtn, #bbcodeBtn, #markdownBtn, #fileLink').parent('.form-group').hide();
               }
-            } catch (error) {
-              console.error('处理文件时出现错误:', error);
-              $('#fileLink').val('文件处理失败！');
-              toastr.error('文件处理失败！');
-            } finally {
-              toastr.clear();
-            }
-          }          
-        
-          async function handleUploadResponse(response) {
-            if (response.ok) {
-              return await response.json();
-            } else {
-              const errorData = await response.json();
-              return { error: errorData.error };
-            }
-          }
-        
-          $(document).on('paste', function(event) {
-            const clipboardData = event.originalEvent.clipboardData;
-            if (clipboardData && clipboardData.items) {
-              for (let i = 0; i < clipboardData.items.length; i++) {
-                const item = clipboardData.items[i];
-                if (item.kind === 'file') {
-                  const pasteFile = item.getAsFile();
-                  uploadFile(pasteFile);
-                  break;
-                }
+
+              function saveToLocalCache(url, fileName) {
+                  const timestamp = new Date().toLocaleString('zh-CN', { hour12: false });
+                  const cacheData = JSON.parse(localStorage.getItem('uploadCache')) || [];
+                  cacheData.push({ url, fileName, timestamp });
+                  localStorage.setItem('uploadCache', JSON.stringify(cacheData));
               }
-            }
+
+              $('#viewCacheBtn').on('click', function() {
+                  const cacheData = JSON.parse(localStorage.getItem('uploadCache')) || [];
+                  const cacheContent = $('#cacheContent');
+                  cacheContent.empty();
+                  if (isCacheVisible) {
+                      cacheContent.hide();
+                      $('#fileLink').val('');
+                      $('#fileLink').parent('.form-group').hide();
+                      isCacheVisible = false;
+                  } else {
+                      if (cacheData.length > 0) {
+                          cacheData.reverse();
+                          cacheData.forEach((item) => {
+                              const listItem = $('<div class="cache-item"></div>')
+                                  .text(item.timestamp + ' - ' + item.fileName)
+                                  .data('url', item.url);
+                              cacheContent.append(listItem);
+                              cacheContent.append('<br>');
+                          });
+                          cacheContent.show();
+                      } else {
+                          cacheContent.append('<div>还没有记录哦！</div>').show();
+                      }
+                      isCacheVisible = true;
+                  }
+              });
+
+              $(document).on('click', '.cache-item', function() {
+                  const url = $(this).data('url');
+                  originalImageURLs = [];
+                  $('#fileLink').val('');
+                  originalImageURLs.push(url);
+                  $('#fileLink').val(originalImageURLs.map(url => url.trim()).join('\\n\\n'));
+                  $('.form-group').show();
+                  adjustTextareaHeight($('#fileLink')[0]);
+              });
           });
-        
-          async function compressImage(file, quality = 0.5, maxResolution = 20000000) {
-            return new Promise((resolve) => {
-              const image = new Image();
-              image.onload = () => {
-                const width = image.width;
-                const height = image.height;
-                const resolution = width * height;
-                let scale = 1;
-                if (resolution > maxResolution) {
-                  scale = Math.sqrt(maxResolution / resolution);
-                }
-                const targetWidth = Math.round(width * scale);
-                const targetHeight = Math.round(height * scale);
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = targetWidth;
-                canvas.height = targetHeight;
-                ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
-                canvas.toBlob((blob) => {
-                  const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
-                  toastr.success('图片压缩成功！');
-                  resolve(compressedFile);
-                }, 'image/jpeg', quality);
-              };
-              const reader = new FileReader();
-              reader.onload = (event) => {
-                image.src = event.target.result;
-              };
-              reader.readAsDataURL(file);
-            });
-          }
-        
-          $('#urlBtn, #bbcodeBtn, #markdownBtn').on('click', function() {
-            const fileLinks = originalImageURLs.map(url => url.trim()).filter(url => url !== '');
-            if (fileLinks.length > 0) {
-              let formattedLinks = '';
-              switch ($(this).attr('id')) {
-                case 'urlBtn':
-                  formattedLinks = fileLinks.join('\\n\\n');
-                  break;
-                case 'bbcodeBtn':
-                  formattedLinks = fileLinks.map(url => '[img]' + url + '[/img]').join('\\n\\n');
-                  break;
-                case 'markdownBtn':
-                  formattedLinks = fileLinks.map(url => '![image](' + url + ')').join('\\n\\n');
-                  break;
-                default:
-                  formattedLinks = fileLinks.join('\\n');
-              }
-              $('#fileLink').val(formattedLinks);
-              adjustTextareaHeight($('#fileLink')[0]);
-              copyToClipboardWithToastr(formattedLinks);
-            }
-          });
-        
-          function handleFileClear(event) {
-            $('#fileLink').val('');
-            adjustTextareaHeight($('#fileLink')[0]);
-            hideButtonsAndTextarea();
-            originalImageURLs = [];
-          }
-        
-          function adjustTextareaHeight(textarea) {
-            textarea.style.height = '1px';
-            textarea.style.height = (textarea.scrollHeight) + 'px';
-          }
-        
-          function copyToClipboardWithToastr(text) {
-            const input = document.createElement('textarea');
-            input.value = text;
-            document.body.appendChild(input);
-            input.select();
-            document.execCommand('copy');
-            document.body.removeChild(input);
-            toastr.success('已复制到剪贴板', '', { timeOut: 300 });
-          }
-        
-          function hideButtonsAndTextarea() {
-            $('#urlBtn, #bbcodeBtn, #markdownBtn, #fileLink').parent('.form-group').hide();
-          }
-        
-          function saveToLocalCache(url, fileName) {
-            const timestamp = new Date().toLocaleString('zh-CN', { hour12: false });
-            const cacheData = JSON.parse(localStorage.getItem('uploadCache')) || [];
-            cacheData.push({ url, fileName, timestamp });
-            localStorage.setItem('uploadCache', JSON.stringify(cacheData));
-          }
-        
-          $('#viewCacheBtn').on('click', function() {
-            const cacheData = JSON.parse(localStorage.getItem('uploadCache')) || [];
-            const cacheContent = $('#cacheContent');
-            cacheContent.empty();
-            if (isCacheVisible) {
-              cacheContent.hide();
-              $('#fileLink').val('');
-              $('#fileLink').parent('.form-group').hide();
-              isCacheVisible = false;
-            } else {
-              if (cacheData.length > 0) {
-                cacheData.reverse();
-                cacheData.forEach((item) => {
-                  const listItem = $('<div class="cache-item"></div>')
-                    .text(item.timestamp + ' - ' + item.fileName)
-                    .data('url', item.url);
-                  cacheContent.append(listItem);
-                  cacheContent.append('<br>');
-                });
-                cacheContent.show();
-              } else {
-                cacheContent.append('<div>还没有记录哦！</div>').show();
-              }
-              isCacheVisible = true;
-            }
-          });
-        
-          $(document).on('click', '.cache-item', function() {
-            const url = $(this).data('url');
-            originalImageURLs = [];
-            $('#fileLink').val('');
-            originalImageURLs.push(url);
-            $('#fileLink').val(originalImageURLs.map(url => url.trim()).join('\\n\\n'));
-            $('.form-group').show();
-            adjustTextareaHeight($('#fileLink')[0]);
-          });
-        });
-        </script>        
-    </body>
+      </script>
+</body>
   </html>  
   `, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
 }
