@@ -215,7 +215,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
                       toastr.info('上传中...', '', { timeOut: 0 });
                       const interfaceInfo = {
                           acceptTypes: 'image/*,video/*',
-                          maxFileSize: 20 * 1024 * 1024
+                          maxFileSize: 1 * 1024 * 1024
                       };
                       const acceptedTypes = interfaceInfo.acceptTypes.split(',');
                       const isAcceptedType = acceptedTypes.some(type => {
