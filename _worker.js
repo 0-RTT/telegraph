@@ -800,10 +800,14 @@ async function handleBingImagesRequest() {
     message: "操作成功",
     data: images
   };
-  return new Response(JSON.stringify(return_data), {
+  const response = new Response(JSON.stringify(return_data), {
     status: 200,
-    headers: { 'Content-Type': 'application/json' }
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'public, max-age=86400'
+    }
   });
+  return response;
 }
 
 async function handleDeleteImagesRequest(request, DATABASE) {
