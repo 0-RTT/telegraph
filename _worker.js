@@ -38,16 +38,15 @@ function authenticate(request, USERNAME, PASSWORD) {
 async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
   const cache = caches.default;
   const cacheKey = new Request(request.url);
+  if (enableAuth) {
+      if (!authenticate(request, USERNAME, PASSWORD)) {
+          return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Admin"' } });
+      }
+  }
   const cachedResponse = await cache.match(cacheKey);
   if (cachedResponse) {
-    return cachedResponse;
+      return cachedResponse;
   }
-  if (enableAuth) {
-    if (!authenticate(request, USERNAME, PASSWORD)) {
-      return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Admin"' } });
-    }
-  }
-  isAuthenticated = true;
   const response = new Response(`
   <!DOCTYPE html>
   <html lang="zh-CN">
@@ -434,8 +433,8 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
           });
       </script>
 </body>
-  </html>  
-  `, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
+</html>  
+`, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
   await cache.put(cacheKey, response.clone());
   return response;
 }
@@ -768,7 +767,6 @@ async function handleImageRequest(request, DATABASE, TG_BOT_TOKEN) {
   if (cachedResponse) {
     return cachedResponse;
   }
-  
   const result = await DATABASE.prepare('SELECT fileId FROM media WHERE url = ?').bind(requestedUrl).first();
   if (result) {
     const fileId = result.fileId;
@@ -798,11 +796,11 @@ async function handleImageRequest(request, DATABASE, TG_BOT_TOKEN) {
       const responseToCache = new Response(response.body, { status: response.status, headers });
       await cache.put(cacheKey, responseToCache.clone());
       return responseToCache;
-    } else {
-      return new Response(null, { status: 404 });
     }
   }
-  return new Response(null, { status: 404 });
+  const notFoundResponse = new Response(null, { status: 404 });
+  await cache.put(cacheKey, notFoundResponse.clone());
+  return notFoundResponse;
 }
 
 async function handleBingImagesRequest(request) {
