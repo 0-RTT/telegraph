@@ -2,6 +2,8 @@
 基于 Cloudflare Worker 和 Pages 的 Telegraph 图床，轻松实现无服务器部署！
 
 # 更新日志
+## 2024年9月29日
+- 优化缓存功能，采用 Cloudflare 提供的 cache.put() 和 cache.match() 方法进行处理。
 
 ## 2024年9月25日
 - 修复GIF文件上传的问题，感谢 [nodeseek](https://www.nodeseek.com/) 用户 [ @Libs](https://www.nodeseek.com/space/7214#/general) 提供的思路。
