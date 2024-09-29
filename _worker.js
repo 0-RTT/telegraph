@@ -441,18 +441,10 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
 }
 
 async function handleAdminRequest(DATABASE, request, USERNAME, PASSWORD) {
-  const cache = caches.default;
-  const cacheKey = new Request(request.url);
   if (!authenticate(request, USERNAME, PASSWORD)) {
     return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Admin"' } });
   }
-  const cachedResponse = await cache.match(cacheKey);
-  if (cachedResponse) {
-    return cachedResponse;
-  }
-  const response = await generateAdminPage(DATABASE);
-  await cache.put(cacheKey, response.clone());
-  return response;
+  return await generateAdminPage(DATABASE);
 }
 
 function isValidCredentials(authHeader, USERNAME, PASSWORD) {
@@ -849,6 +841,11 @@ async function handleDeleteImagesRequest(request, DATABASE) {
     }
     const placeholders = keysToDelete.map(() => '?').join(',');
     await DATABASE.prepare(`DELETE FROM media WHERE url IN (${placeholders})`).bind(...keysToDelete).run();
+    const cache = caches.default;
+    for (const url of keysToDelete) {
+      const cacheKey = new Request(url);
+      await cache.delete(cacheKey);
+    }
     return new Response(JSON.stringify({ message: '删除成功' }), { status: 200 });
   } catch (error) {
     console.error('删除图片时出错:', error);
