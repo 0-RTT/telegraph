@@ -36,13 +36,19 @@ function authenticate(request, USERNAME, PASSWORD) {
 }
 
 async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
+  const cache = caches.default;
+  const cacheKey = new Request(request.url);
+  const cachedResponse = await cache.match(cacheKey);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
   if (enableAuth) {
     if (!authenticate(request, USERNAME, PASSWORD)) {
       return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Admin"' } });
     }
   }
   isAuthenticated = true;
-  return new Response(`
+  const response = new Response(`
   <!DOCTYPE html>
   <html lang="zh-CN">
   <head>
@@ -430,13 +436,23 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
 </body>
   </html>  
   `, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
+  await cache.put(cacheKey, response.clone());
+  return response;
 }
 
 async function handleAdminRequest(DATABASE, request, USERNAME, PASSWORD) {
+  const cache = caches.default;
+  const cacheKey = new Request(request.url);
   if (!authenticate(request, USERNAME, PASSWORD)) {
     return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Admin"' } });
   }
-  return await generateAdminPage(DATABASE);
+  const cachedResponse = await cache.match(cacheKey);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  const response = await generateAdminPage(DATABASE);
+  await cache.put(cacheKey, response.clone());
+  return response;
 }
 
 function isValidCredentials(authHeader, USERNAME, PASSWORD) {
@@ -754,6 +770,13 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
 
 async function handleImageRequest(request, DATABASE, TG_BOT_TOKEN) {
   const requestedUrl = request.url;
+  const cache = caches.default;
+  const cacheKey = new Request(requestedUrl);
+  const cachedResponse = await cache.match(cacheKey);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  
   const result = await DATABASE.prepare('SELECT fileId FROM media WHERE url = ?').bind(requestedUrl).first();
   if (result) {
     const fileId = result.fileId;
@@ -779,9 +802,10 @@ async function handleImageRequest(request, DATABASE, TG_BOT_TOKEN) {
       }
       const headers = new Headers(response.headers);
       headers.set('Content-Type', contentType);
-      headers.set('Cache-Control', 'public, max-age=604800');
       headers.set('Content-Disposition', 'inline');
-      return new Response(response.body, { status: response.status, headers });
+      const responseToCache = new Response(response.body, { status: response.status, headers });
+      await cache.put(cacheKey, responseToCache.clone());
+      return responseToCache;
     } else {
       return new Response(null, { status: 404 });
     }
@@ -789,8 +813,14 @@ async function handleImageRequest(request, DATABASE, TG_BOT_TOKEN) {
   return new Response(null, { status: 404 });
 }
 
-async function handleBingImagesRequest() {
-  const res = await fetch(`https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=5`);
+async function handleBingImagesRequest(request) {
+  const cache = caches.default;
+  const cacheKey = new Request('https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=5');
+  const cachedResponse = await cache.match(cacheKey);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  const res = await fetch(cacheKey);
   const bing_data = await res.json();
   const images = bing_data.images.map(image => ({
     url: `https://cn.bing.com${image.url}`
@@ -802,11 +832,9 @@ async function handleBingImagesRequest() {
   };
   const response = new Response(JSON.stringify(return_data), {
     status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=86400'
-    }
+    headers: { 'Content-Type': 'application/json' }
   });
+  await cache.put(cacheKey, response.clone());
   return response;
 }
 
