@@ -1,5 +1,5 @@
 # 介绍
-基于 Cloudflare Worker 和 Pages 的 Telegraph 图床，轻松实现无服务器部署！
+基于 Cloudflare Worker 和 Pages 的图床，轻松实现无服务器部署！
 
 # 更新日志
 ## 2024年9月29日
