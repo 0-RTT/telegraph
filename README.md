@@ -111,7 +111,7 @@ CREATE TABLE media (
 #### 3、设置变量
 ![image](https://kycloud3.koyoo.cn/2024092389dc0202409232021524424.png) 
 
-#### 4、设置自定义域名。变量中的```DOMAIN```对应的值，如果设置了自定义域，变量需要对应的值，不设置则填pages默认域名。
+#### 4、设置自定义域名。
 ![image](https://kycloud3.koyoo.cn/202409068f76a202409061718122696.png)  
 
 ![image](https://kycloud3.koyoo.cn/20240906b79a6202409061719043430.png)  
