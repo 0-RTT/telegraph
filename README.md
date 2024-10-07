@@ -75,8 +75,6 @@ CREATE TABLE media (
 ### 填写示例：
 ![image](https://kycloud3.koyoo.cn/2024092389dc0202409232021524424.png) 
 
-TG_BOT的部署参考telegraph的，需要额外获取```TG_BOT_TOKEN```和```TG_CHAT_ID```这两个变量,可参考[README.md](https://github.com/0-RTT/telegraph/blob/main/TG_BOT/README.md)。
-
 [Pages部署教程](https://github.com/0-RTT/telegraph?tab=readme-ov-file#pages%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B)
 
 [Worker部署教程](https://github.com/0-RTT/telegraph?tab=readme-ov-file#worker%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B)
@@ -87,41 +85,37 @@ TG_BOT的部署参考telegraph的，需要额外获取```TG_BOT_TOKEN```和```TG
 #### 1、初始化数据库
 ![image](https://kycloud3.koyoo.cn/20240829ab8e7202408291110085598.png)  
 
- 
 ![image](https://kycloud3.koyoo.cn/20240829dde8f202408291110076344.png)  
 
-###### ⚠️⚠️⚠️TG_BOT和Telegraph的初始化指令不一样，注意不要弄错。
+###### ⚠️⚠️⚠️填入[初始化指令](https://github.com/0-RTT/telegraph#%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%9D%E5%A7%8B%E5%8C%96%E6%8C%87%E4%BB%A4)
 
-![image](https://kycloud3.koyoo.cn/2024082999a92202408291110079488.png)  
-
+![image](https://kycloud3.koyoo.cn/202410074b824202410070851275140.png)  
  
-![image](https://kycloud3.koyoo.cn/2024082913106202408291111045980.png)  
-
+![image](https://kycloud3.koyoo.cn/20241007917fa202410070852019143.png)  
  
 ![image](https://kycloud3.koyoo.cn/20240829426e2202408291111415611.png)  
 
-
 ![image](https://kycloud3.koyoo.cn/202408290028f20240829111205448.png)  
 
-#### 2、下载对应文件夹下的_worker.js，打包成zip部署到pages。如果通过fork仓库部署，需要设置一下输出目录为TG_BOT。
+#### 2、部署到pages
 
-![image](https://kycloud3.koyoo.cn/20240906d561b202409061706196490.png)  
+![image](https://kycloud3.koyoo.cn/20241007f786a202410070857578208.png)
 
+- 2.1 下载_worker.js，打包成zip上传到pages
 
-![image](https://kycloud3.koyoo.cn/2024090635c19202409061709225960.png)  
+![image](https://kycloud3.koyoo.cn/2024100790232202410070900405992.png)
 
- 
-![image](https://kycloud3.koyoo.cn/20240906e636520240906171027282.png)  
+- 2.2 通过fork本仓库部署到pages
+![image](https://kycloud3.koyoo.cn/20241007d7bf6202410070902287155.png)
+![image](https://kycloud3.koyoo.cn/20241007a4b2f202410070902288891.png)
 
 #### 3、设置变量
 ![image](https://kycloud3.koyoo.cn/2024092389dc0202409232021524424.png) 
 
-#### 4、设置自定义域名，不设置则使用pages默认域名
+#### 4、设置自定义域名。变量中的```DOMAIN```对应的值，如果设置了自定义域，变量需要对应的值，不设置则填pages默认域名。
 ![image](https://kycloud3.koyoo.cn/202409068f76a202409061718122696.png)  
 
-
 ![image](https://kycloud3.koyoo.cn/20240906b79a6202409061719043430.png)  
-
 
 ![image](https://kycloud3.koyoo.cn/20240906188f8202409061720032928.png)  
 
@@ -129,29 +123,28 @@ TG_BOT的部署参考telegraph的，需要额外获取```TG_BOT_TOKEN```和```TG
 
 ![image](https://kycloud3.koyoo.cn/202409066761e202409061721281588.png)  
 
- 
 ![image](https://kycloud3.koyoo.cn/2024090677f2320240906172317323.png)  
 
- 
 ![image](https://kycloud3.koyoo.cn/202409065c29920240906172451915.png)  
 
 
 
 ## Worker部署教程：
 #### 1、初始化数据库
-![image](https://kycloud3.koyoo.cn/20240829ab8e7202408291110085598.png)
+![image](https://kycloud3.koyoo.cn/20240829ab8e7202408291110085598.png)  
 
-![image](https://kycloud3.koyoo.cn/20240829dde8f202408291110076344.png)
+ 
+![image](https://kycloud3.koyoo.cn/20240829dde8f202408291110076344.png)  
 
-##### ⚠️⚠️⚠️TG_BOT和Telegraph的初始化指令不一样，注意不要弄错。
+###### ⚠️⚠️⚠️填入[初始化指令](https://github.com/0-RTT/telegraph#%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%9D%E5%A7%8B%E5%8C%96%E6%8C%87%E4%BB%A4)
 
-![image](https://kycloud3.koyoo.cn/2024082999a92202408291110079488.png)
+![image](https://kycloud3.koyoo.cn/202410074b824202410070851275140.png)  
+ 
+![image](https://kycloud3.koyoo.cn/20241007917fa202410070852019143.png)  
+ 
+![image](https://kycloud3.koyoo.cn/20240829426e2202408291111415611.png)  
 
-![image](https://kycloud3.koyoo.cn/2024082913106202408291111045980.png)
-
-![image](https://kycloud3.koyoo.cn/20240829426e2202408291111415611.png)
-
-![image](https://kycloud3.koyoo.cn/202408290028f20240829111205448.png)
+![image](https://kycloud3.koyoo.cn/202408290028f20240829111205448.png)  
 
 #### 2、创建worker
 ![image](https://kycloud3.koyoo.cn/202408295c74a202408291112222566.png)
