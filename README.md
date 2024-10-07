@@ -83,9 +83,8 @@ CREATE TABLE media (
 ## Pages部署教程：
 
 #### 1、初始化数据库
-![image](https://kycloud3.koyoo.cn/20240829ab8e7202408291110085598.png)  
+![image](https://kycloud3.koyoo.cn/20241007ae0fa202410070917194587.png)  
 
-![image](https://kycloud3.koyoo.cn/20240829dde8f202408291110076344.png)  
 
 ###### ⚠️⚠️⚠️填入[初始化指令](https://github.com/0-RTT/telegraph#%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%9D%E5%A7%8B%E5%8C%96%E6%8C%87%E4%BB%A4)
 
@@ -131,10 +130,7 @@ CREATE TABLE media (
 
 ## Worker部署教程：
 #### 1、初始化数据库
-![image](https://kycloud3.koyoo.cn/20240829ab8e7202408291110085598.png)  
-
- 
-![image](https://kycloud3.koyoo.cn/20240829dde8f202408291110076344.png)  
+![image](https://kycloud3.koyoo.cn/20241007ae0fa202410070917194587.png)  
 
 ###### ⚠️⚠️⚠️填入[初始化指令](https://github.com/0-RTT/telegraph#%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%9D%E5%A7%8B%E5%8C%96%E6%8C%87%E4%BB%A4)
 
