@@ -695,20 +695,13 @@ async function generateAdminPage(DATABASE) {
 }
 
 async function fetchMediaData(DATABASE) {
-  const result = await DATABASE.prepare('SELECT fileId, url FROM media').all();
+  const result = await DATABASE.prepare('SELECT url, fileId FROM media').all();
   const mediaData = result.results.map(row => {
     const timestamp = parseInt(row.url.split('/').pop().split('.')[0]);
-    return {
-      fileId: row.fileId,
-      url: row.url,
-      timestamp: timestamp
-    };
+    return { fileId: row.fileId, url: row.url, timestamp: timestamp };
   });
   mediaData.sort((a, b) => b.timestamp - a.timestamp);
-  return mediaData.map(({ fileId, url }) => ({
-    fileId,
-    url
-  }));
+  return mediaData.map(({ fileId, url }) => ({ fileId, url }));
 }
 
 async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASSWORD, domain, TG_BOT_TOKEN, TG_CHAT_ID) {
@@ -735,19 +728,14 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
       throw new Error(errorData.description || '上传到 Telegram 失败');
     }
     const responseData = await telegramResponse.json();
-    if (responseData.result.video) {
-      fileId = responseData.result.video.file_id;
-    } else if (responseData.result.document) {
-      fileId = responseData.result.document.file_id;
-    } else if (responseData.result.sticker) {
-      fileId = responseData.result.sticker.file_id;
-    } else {
-      throw new Error('返回的数据中没有文件 ID');
-    }
+    if (responseData.result.video) fileId = responseData.result.video.file_id;
+    else if (responseData.result.document) fileId = responseData.result.document.file_id;
+    else if (responseData.result.sticker) fileId = responseData.result.sticker.file_id;
+    else throw new Error('返回的数据中没有文件 ID');
     const fileExtension = file.name.split('.').pop();
     const timestamp = Date.now();
     const imageURL = `https://${domain}/${timestamp}.${fileExtension}`;
-    await DATABASE.prepare('INSERT OR IGNORE INTO media (fileId, url) VALUES (?, ?)').bind(fileId, imageURL).run();
+    await DATABASE.prepare('INSERT INTO media (url, fileId) VALUES (?, ?) ON CONFLICT(url) DO NOTHING').bind(imageURL, fileId).run();
     return new Response(JSON.stringify({ data: imageURL }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
     console.error('内部服务器错误:', error);
@@ -760,16 +748,12 @@ async function handleImageRequest(request, DATABASE, TG_BOT_TOKEN) {
   const cache = caches.default;
   const cacheKey = new Request(requestedUrl);
   const cachedResponse = await cache.match(cacheKey);
-  if (cachedResponse) {
-    return cachedResponse;
-  }
+  if (cachedResponse) return cachedResponse;
   const result = await DATABASE.prepare('SELECT fileId FROM media WHERE url = ?').bind(requestedUrl).first();
   if (result) {
     const fileId = result.fileId;
     const getFileResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/getFile?file_id=${fileId}`);
-    if (!getFileResponse.ok) {
-      return new Response(null, { status: 404 });
-    }
+    if (!getFileResponse.ok) return new Response(null, { status: 404 });
     const fileData = await getFileResponse.json();
     const filePath = fileData.result.file_path;
     const telegramFileUrl = `https://api.telegram.org/file/bot${TG_BOT_TOKEN}/${filePath}`;
@@ -777,15 +761,10 @@ async function handleImageRequest(request, DATABASE, TG_BOT_TOKEN) {
     if (response.ok) {
       const fileExtension = requestedUrl.split('.').pop().toLowerCase();
       let contentType = 'text/plain';
-      if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
-        contentType = 'image/jpeg';
-      } else if (fileExtension === 'png') {
-        contentType = 'image/png';
-      } else if (fileExtension === 'gif') {
-        contentType = 'image/gif';
-      } else if (fileExtension === 'mp4') {
-        contentType = 'video/mp4';
-      }
+      if (fileExtension === 'jpg' || fileExtension === 'jpeg') contentType = 'image/jpeg';
+      if (fileExtension === 'png') contentType = 'image/png';
+      if (fileExtension === 'gif') contentType = 'image/gif';
+      if (fileExtension === 'mp4') contentType = 'video/mp4';
       const headers = new Headers(response.headers);
       headers.set('Content-Type', contentType);
       headers.set('Content-Disposition', 'inline');
@@ -803,36 +782,21 @@ async function handleBingImagesRequest(request) {
   const cache = caches.default;
   const cacheKey = new Request('https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=5');
   const cachedResponse = await cache.match(cacheKey);
-  if (cachedResponse) {
-    return cachedResponse;
-  }
+  if (cachedResponse) return cachedResponse;
   const res = await fetch(cacheKey);
-  const bing_data = await res.json();
-  const images = bing_data.images.map(image => ({
-    url: `https://cn.bing.com${image.url}`
-  }));
-  const return_data = {
-    status: true,
-    message: "操作成功",
-    data: images
-  };
-  const response = new Response(JSON.stringify(return_data), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' }
-  });
+  const bingData = await res.json();
+  const images = bingData.images.map(image => ({ url: `https://cn.bing.com${image.url}` }));
+  const returnData = { status: true, message: "操作成功", data: images };
+  const response = new Response(JSON.stringify(returnData), { status: 200, headers: { 'Content-Type': 'application/json' } });
   await cache.put(cacheKey, response.clone());
   return response;
 }
 
 async function handleDeleteImagesRequest(request, DATABASE) {
-  if (request.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 });
-  }
+  if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
   try {
     const keysToDelete = await request.json();
-    if (keysToDelete.length === 0) {
-      return new Response(JSON.stringify({ message: '没有要删除的项' }), { status: 400 });
-    }
+    if (keysToDelete.length === 0) return new Response(JSON.stringify({ message: '没有要删除的项' }), { status: 400 });
     const placeholders = keysToDelete.map(() => '?').join(',');
     await DATABASE.prepare(`DELETE FROM media WHERE url IN (${placeholders})`).bind(...keysToDelete).run();
     const cache = caches.default;
