@@ -4,7 +4,7 @@
 # 更新日志
 ## 2024年10月19日
 - 修复webp无法上传的BUG。
-- 优化数据库结构。
+- 优化数据库结构。需要对已有数据进行迁移，[点击查看教程](https://github.com/0-RTT/telegraph/releases/tag/v2.0)。
 
 ## 2024年9月29日
 - 优化缓存功能，采用 Cloudflare 提供的 cache.put() 和 cache.match() 方法进行处理。
