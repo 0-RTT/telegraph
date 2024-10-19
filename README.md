@@ -2,6 +2,9 @@
 基于 Cloudflare Worker 和 Pages 的图床，轻松实现无服务器部署！
 
 # 更新日志
+## 2024年10月19日
+- 修复webp无法上传的BUG。
+
 ## 2024年9月29日
 - 优化缓存功能，采用 Cloudflare 提供的 cache.put() 和 cache.match() 方法进行处理。
 
