@@ -729,10 +729,7 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
     } else {
       uploadFormData.append("document", file);
     }
-    const telegramResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendDocument`, {
-      method: 'POST',
-      body: uploadFormData
-    });
+    const telegramResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendDocument`, { method: 'POST', body: uploadFormData });
     if (!telegramResponse.ok) {
       const errorData = await telegramResponse.json();
       throw new Error(errorData.description || '上传到 Telegram 失败');
@@ -742,6 +739,8 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
       fileId = responseData.result.video.file_id;
     } else if (responseData.result.document) {
       fileId = responseData.result.document.file_id;
+    } else if (responseData.result.sticker) {
+      fileId = responseData.result.sticker.file_id;
     } else {
       throw new Error('返回的数据中没有文件 ID');
     }
@@ -749,10 +748,7 @@ async function handleUploadRequest(request, DATABASE, enableAuth, USERNAME, PASS
     const timestamp = Date.now();
     const imageURL = `https://${domain}/${timestamp}.${fileExtension}`;
     await DATABASE.prepare('INSERT OR IGNORE INTO media (fileId, url) VALUES (?, ?)').bind(fileId, imageURL).run();
-    return new Response(JSON.stringify({ data: imageURL }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return new Response(JSON.stringify({ data: imageURL }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
     console.error('内部服务器错误:', error);
     return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
