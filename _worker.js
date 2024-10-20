@@ -764,6 +764,7 @@ async function handleImageRequest(request, DATABASE, TG_BOT_TOKEN) {
       if (fileExtension === 'jpg' || fileExtension === 'jpeg') contentType = 'image/jpeg';
       if (fileExtension === 'png') contentType = 'image/png';
       if (fileExtension === 'gif') contentType = 'image/gif';
+      if (fileExtension === 'webp') contentType = 'image/webp';
       if (fileExtension === 'mp4') contentType = 'video/mp4';
       const headers = new Headers(response.headers);
       headers.set('Content-Type', contentType);
@@ -793,20 +794,29 @@ async function handleBingImagesRequest(request) {
 }
 
 async function handleDeleteImagesRequest(request, DATABASE) {
-  if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
+  if (request.method !== 'POST') {
+    return new Response('Method Not Allowed', { status: 405 });
+  }
   try {
     const keysToDelete = await request.json();
-    if (keysToDelete.length === 0) return new Response(JSON.stringify({ message: '没有要删除的项' }), { status: 400 });
+    if (!Array.isArray(keysToDelete) || keysToDelete.length === 0) {
+      return new Response(JSON.stringify({ message: '没有要删除的项' }), { status: 400 });
+    }
     const placeholders = keysToDelete.map(() => '?').join(',');
-    await DATABASE.prepare(`DELETE FROM media WHERE url IN (${placeholders})`).bind(...keysToDelete).run();
+    const result = await DATABASE.prepare(`DELETE FROM media WHERE url IN (${placeholders})`).bind(...keysToDelete).run();
+    if (result.changes === 0) {
+      return new Response(JSON.stringify({ message: '未找到要删除的项' }), { status: 404 });
+    }
     const cache = caches.default;
     for (const url of keysToDelete) {
       const cacheKey = new Request(url);
-      await cache.delete(cacheKey);
+      const cachedResponse = await cache.match(cacheKey);
+      if (cachedResponse) {
+        await cache.delete(cacheKey);
+      }
     }
     return new Response(JSON.stringify({ message: '删除成功' }), { status: 200 });
   } catch (error) {
-    console.error('删除图片时出错:', error);
-    return new Response(JSON.stringify({ error: '删除失败' }), { status: 500 });
+    return new Response(JSON.stringify({ error: '删除失败', details: error.message }), { status: 500 });
   }
 }
