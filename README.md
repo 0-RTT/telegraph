@@ -2,6 +2,9 @@
 基于 Cloudflare Worker 和 Pages 的图床，轻松实现无服务器部署！
 
 # 更新日志
+## 2024年11月1日
+- 修复上传后无法加载的问题
+
 ## 2024年10月19日
 - 修复webp无法上传的BUG。
 - 优化数据库结构。需要对已有数据进行迁移，[点击查看教程](https://github.com/0-RTT/telegraph/releases/tag/v2.0)。
@@ -77,7 +80,7 @@ CREATE TABLE media (
 );
 ```
 ### 填写示例：
-![image](https://kycloud3.koyoo.cn/2024092389dc0202409232021524424.png) 
+![image](https://kycloud3.koyoo.cn/202411013c03f202411010959426186.png)
 
 [Pages部署教程](https://github.com/0-RTT/telegraph?tab=readme-ov-file#pages%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B)
 
