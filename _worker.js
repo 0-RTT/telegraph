@@ -751,7 +751,9 @@ async function handleImageRequest(request, DATABASE, TG_BOT_TOKEN) {
   if (cachedResponse) return cachedResponse;
   const result = await DATABASE.prepare('SELECT fileId FROM media WHERE url = ?').bind(requestedUrl).first();
   if (!result) {
-    return new Response('未匹配到url', { status: 404 });
+    const notFoundResponse = new Response('资源不存在', { status: 404 });
+    await cache.put(cacheKey, notFoundResponse.clone());
+    return notFoundResponse;
   }
   const fileId = result.fileId;
   let filePath;
@@ -760,7 +762,7 @@ async function handleImageRequest(request, DATABASE, TG_BOT_TOKEN) {
   while (attempts < maxAttempts) {
     const getFilePath = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/getFile?file_id=${fileId}`);
     if (!getFilePath.ok) {
-      return new Response('请求文件路径失败', { status: 500 });
+      return new Response('getFile请求失败', { status: 500 });
     }
     const fileData = await getFilePath.json();
     if (fileData.ok && fileData.result.file_path) {
@@ -770,7 +772,9 @@ async function handleImageRequest(request, DATABASE, TG_BOT_TOKEN) {
     attempts++;
   }
   if (!filePath) {
-    return new Response('未找到文件路径', { status: 404 });
+    const notFoundResponse = new Response('未找到FilePath', { status: 404 });
+    await cache.put(cacheKey, notFoundResponse.clone());
+    return notFoundResponse;
   }
   const getFileResponse = `https://api.telegram.org/file/bot${TG_BOT_TOKEN}/${filePath}`;
   const response = await fetch(getFileResponse);
