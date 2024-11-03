@@ -802,6 +802,9 @@ async function handleBingImagesRequest(request) {
   const cachedResponse = await cache.match(cacheKey);
   if (cachedResponse) return cachedResponse;
   const res = await fetch(cacheKey);
+  if (!res.ok) {
+    return new Response('请求 Bing API 失败', { status: res.status });
+  }
   const bingData = await res.json();
   const images = bingData.images.map(image => ({ url: `https://cn.bing.com${image.url}` }));
   const returnData = { status: true, message: "操作成功", data: images };
