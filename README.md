@@ -88,6 +88,8 @@ CREATE TABLE media (
 
 [Worker部署教程](https://github.com/0-RTT/telegraph?tab=readme-ov-file#worker%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B)
 
+[nodeseek用户@sdo888编写的教程](https://www.nodeseek.com/post-196832-1)
+
 
 ## Pages部署教程：
 
