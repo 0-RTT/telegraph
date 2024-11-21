@@ -258,7 +258,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
                 toastr.error(responseData.error);
               } else {
                 originalImageURLs.push(responseData.data);
-                $('#fileLink').val(originalImageURLs.join('\n\n'));
+                $('#fileLink').val(originalImageURLs.join('\\n\\n'));
                 $('.form-group').show();
                 adjustTextareaHeight($('#fileLink')[0]);
                 toastr.success('文件上传成功！');
@@ -288,7 +288,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
               toastr.error(responseData.error);
             } else {
               originalImageURLs.push(responseData.data);
-              $('#fileLink').val(originalImageURLs.join('\n\n'));
+              $('#fileLink').val(originalImageURLs.join('\\n\\n'));
               $('.form-group').show();
               adjustTextareaHeight($('#fileLink')[0]);
               toastr.success('文件上传成功！');
@@ -364,16 +364,16 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
             let formattedLinks = '';
             switch ($(this).attr('id')) {
               case 'urlBtn':
-                formattedLinks = fileLinks.join('\n\n');
+                formattedLinks = fileLinks.join('\\n\\n');
                 break;
               case 'bbcodeBtn':
-                formattedLinks = fileLinks.map(url => '[img]' + url + '[/img]').join('\n\n');
+                formattedLinks = fileLinks.map(url => '[img]' + url + '[/img]').join('\\n\\n');
                 break;
               case 'markdownBtn':
-                formattedLinks = fileLinks.map(url => '![image](' + url + ')').join('\n\n');
+                formattedLinks = fileLinks.map(url => '![image](' + url + ')').join('\\n\\n');
                 break;
               default:
-                formattedLinks = fileLinks.join('\n');
+                formattedLinks = fileLinks.join('\\n');
             }
             $('#fileLink').val(formattedLinks);
             adjustTextareaHeight($('#fileLink')[0]);
@@ -452,7 +452,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
           originalImageURLs = [];
           $('#fileLink').val('');
           originalImageURLs.push(url);
-          $('#fileLink').val(originalImageURLs.map(url => url.trim()).join('\n\n'));
+          $('#fileLink').val(originalImageURLs.map(url => url.trim()).join('\\n\\n'));
           $('.form-group').show();
           adjustTextareaHeight($('#fileLink')[0]);
         });
