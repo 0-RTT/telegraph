@@ -591,7 +591,7 @@ async function generateAdminPage(DATABASE) {
         font-size: 18px;
         color: #555;
       }
-      .delete-button {
+      .delete-button, .copy-button {
         background-color: #ff4d4d;
         color: white;
         border: none;
@@ -601,8 +601,12 @@ async function generateAdminPage(DATABASE) {
         transition: background-color 0.3s;
         width: auto;
       }
-      .delete-button:hover {
+      .delete-button:hover, .copy-button:hover {
         background-color: #ff1a1a;
+      }
+      .header-right {
+        display: flex;
+        gap: 10px;
       }
       .hidden {
         display: none;
@@ -675,7 +679,18 @@ async function generateAdminPage(DATABASE) {
           alert('删除失败');
         }
       }
-    
+
+      function copySelectedUrls() {
+        if (selectedKeys.size === 0) return;
+
+        const urls = Array.from(selectedKeys).join('\\n');
+        navigator.clipboard.writeText(urls).then(() => {
+          alert('已复制选中的媒体 URL');
+        }).catch((err) => {
+          alert('复制失败');
+        });
+      }
+
       document.addEventListener('DOMContentLoaded', () => {
         const mediaContainers = document.querySelectorAll('.media-container[data-key]');
         const options = {
@@ -713,7 +728,7 @@ async function generateAdminPage(DATABASE) {
           mediaObserver.observe(container);
         });
       });
-    </script>    
+      </script>    
     </head>
     <body>
       <div class="header">
@@ -723,6 +738,7 @@ async function generateAdminPage(DATABASE) {
         </div>
         <div class="header-right hidden">
           <button id="delete-button" class="delete-button" onclick="deleteSelectedImages()">删除选中</button>
+          <button id="copy-button" class="copy-button" onclick="copySelectedUrls()">复制链接</button>
         </div>
       </div>
       <div class="gallery">
