@@ -764,9 +764,9 @@ async function generateAdminPage(DATABASE) {
         <span>已选中: <span id="selected-count">0</span>个</span>
       </div>
       <div class="header-right hidden">
+        <button id="copy-button" class="copy-button" onclick="copySelectedUrls()">复制</button>
         <button id="select-all-button" class="delete-button" onclick="selectAllImages()">全选</button>
-        <button id="delete-button" class="delete-button" onclick="deleteSelectedImages()">删除选中</button>
-        <button id="copy-button" class="copy-button" onclick="copySelectedUrls()">复制链接</button>
+        <button id="delete-button" class="delete-button" onclick="deleteSelectedImages()">删除</button>
       </div>
     </div>
     <div class="gallery">
