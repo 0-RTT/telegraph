@@ -506,11 +506,11 @@ async function generateAdminPage(DATABASE) {
   const html = `
   <!DOCTYPE html>
   <html>
-    <head>
-      <title>图库</title>
-      <link rel="icon" href="https://p1.meituan.net/csc/c195ee91001e783f39f41ffffbbcbd484286.ico" type="image/x-icon">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <style>
+  <head>
+    <title>图库</title>
+    <link rel="icon" href="https://p1.meituan.net/csc/c195ee91001e783f39f41ffffbbcbd484286.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
       body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background-color: #f4f4f4;
@@ -529,13 +529,25 @@ async function generateAdminPage(DATABASE) {
         padding: 15px 20px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         border-radius: 8px;
+        flex-wrap: wrap;
+      }
+      .header-left {
+        flex: 1;
+      }
+      .header-right {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        flex: 1;
+        justify-content: flex-end;
+        flex-wrap: wrap;
       }
       .gallery {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
         gap: 16px;
       }
-      .image-container, .media-container {
+      .media-container {
         position: relative;
         overflow: hidden;
         border-radius: 12px;
@@ -555,7 +567,7 @@ async function generateAdminPage(DATABASE) {
         z-index: 10;
         cursor: pointer;
       }
-      .image-container .upload-time, .media-container .upload-time {
+      .upload-time {
         position: absolute;
         bottom: 10px;
         left: 10px;
@@ -567,7 +579,7 @@ async function generateAdminPage(DATABASE) {
         z-index: 10;
         display: none;
       }
-      .image-container:hover, .media-container:hover {
+      .media-container:hover {
         transform: scale(1.05);
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
       }
@@ -581,7 +593,7 @@ async function generateAdminPage(DATABASE) {
       .gallery-image.loaded {
         opacity: 1;
       }
-      .media-container.selected, .image-container.selected {
+      .media-container.selected {
         border: 2px solid #007bff;
         background-color: rgba(0, 123, 255, 0.1);
       }
@@ -604,37 +616,27 @@ async function generateAdminPage(DATABASE) {
       .delete-button:hover, .copy-button:hover {
         background-color: #ff1a1a;
       }
-      .header-right {
-        display: flex;
-        gap: 10px;
-      }
       .hidden {
         display: none;
       }
-      @media (max-width: 600px) {
+      @media (max-width: 768px) {
+        .header-left, .header-right {
+          flex: 1 1 100%;
+          justify-content: flex-start;
+        }
+        .header-right {
+          margin-top: 10px;
+        }
         .gallery {
           grid-template-columns: repeat(2, 1fr);
         }
-        .header {
-          flex-direction: row;
-          align-items: center;
-        }
-        .header-right {
-          margin-left: auto;
-        }
-        .footer {
-          font-size: 16px;
-        }
-        .delete-button {
-          width: 100%;
-          margin-top: 10px;
-        }
       }
-      </style>
-      <script>
+    </style>
+    <script>
       let selectedCount = 0;
       const selectedKeys = new Set();
-    
+      let isAllSelected = false;
+  
       function toggleImageSelection(container) {
         const key = container.getAttribute('data-key');
         container.classList.toggle('selected');
@@ -650,7 +652,7 @@ async function generateAdminPage(DATABASE) {
         }
         updateDeleteButton();
       }
-    
+  
       function updateDeleteButton() {
         const deleteButton = document.getElementById('delete-button');
         const countDisplay = document.getElementById('selected-count');
@@ -662,7 +664,7 @@ async function generateAdminPage(DATABASE) {
           headerRight.classList.add('hidden');
         }
       }
-    
+  
       async function deleteSelectedImages() {
         if (selectedKeys.size === 0) return;
         const response = await fetch('/delete-images', {
@@ -679,10 +681,10 @@ async function generateAdminPage(DATABASE) {
           alert('删除失败');
         }
       }
-
+  
       function copySelectedUrls() {
         if (selectedKeys.size === 0) return;
-
+  
         const urls = Array.from(selectedKeys).join('\\n');
         navigator.clipboard.writeText(urls).then(() => {
           alert('已复制选中的媒体 URL');
@@ -690,7 +692,32 @@ async function generateAdminPage(DATABASE) {
           alert('复制失败');
         });
       }
-
+  
+      function selectAllImages() {
+        const mediaContainers = document.querySelectorAll('.media-container');
+        if (isAllSelected) {
+          mediaContainers.forEach(container => {
+            container.classList.remove('selected');
+            const key = container.getAttribute('data-key');
+            selectedKeys.delete(key);
+            container.querySelector('.upload-time').style.display = 'none';
+          });
+          selectedCount = 0;
+        } else {
+          mediaContainers.forEach(container => {
+            if (!container.classList.contains('selected')) {
+              container.classList.add('selected');
+              const key = container.getAttribute('data-key');
+              selectedKeys.add(key);
+              selectedCount++;
+              container.querySelector('.upload-time').style.display = 'block';
+            }
+          });
+        }
+        isAllSelected = !isAllSelected;
+        updateDeleteButton();
+      }
+  
       document.addEventListener('DOMContentLoaded', () => {
         const mediaContainers = document.querySelectorAll('.media-container[data-key]');
         const options = {
@@ -704,7 +731,7 @@ async function generateAdminPage(DATABASE) {
             if (entry.isIntersecting) {
               const container = entry.target;
               const mediaType = container.querySelector('.media-type').textContent;
-    
+  
               if (mediaType === '视频') {
                 const video = container.querySelector('video');
                 if (video && !video.src) {
@@ -723,32 +750,33 @@ async function generateAdminPage(DATABASE) {
             }
           });
         }, options);
-    
+  
         mediaContainers.forEach(container => {
           mediaObserver.observe(container);
         });
       });
-      </script>    
-    </head>
-    <body>
-      <div class="header">
-        <div class="header-left">
-          <span>媒体文件 ${mediaData.length} 个</span>
-          <span>已选中: <span id="selected-count">0</span>个</span>
-        </div>
-        <div class="header-right hidden">
-          <button id="delete-button" class="delete-button" onclick="deleteSelectedImages()">删除选中</button>
-          <button id="copy-button" class="copy-button" onclick="copySelectedUrls()">复制链接</button>
-        </div>
+    </script>    
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-left">
+        <span>媒体文件 ${mediaData.length} 个</span>
+        <span>已选中: <span id="selected-count">0</span>个</span>
       </div>
-      <div class="gallery">
-        ${mediaHtml}
+      <div class="header-right hidden">
+        <button id="select-all-button" class="delete-button" onclick="selectAllImages()">全选</button>
+        <button id="delete-button" class="delete-button" onclick="deleteSelectedImages()">删除选中</button>
+        <button id="copy-button" class="copy-button" onclick="copySelectedUrls()">复制链接</button>
       </div>
-      <div class="footer">
-        到底啦
-      </div>
-    </body>
-  </html>
+    </div>
+    <div class="gallery">
+      ${mediaHtml}
+    </div>
+    <div class="footer">
+      到底啦
+    </div>
+  </body>
+  </html>  
   `;
   return new Response(html, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
 }
