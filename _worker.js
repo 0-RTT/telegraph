@@ -687,7 +687,7 @@ async function generateAdminPage(DATABASE) {
   
         const urls = Array.from(selectedKeys).join('\\n');
         navigator.clipboard.writeText(urls).then(() => {
-          alert('已复制选中的媒体 URL');
+          alert('复制成功');
         }).catch((err) => {
           alert('复制失败');
         });
