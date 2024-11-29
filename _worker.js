@@ -319,7 +319,10 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
               const item = clipboardData.items[i];
               if (item.kind === 'file') {
                 const pasteFile = item.getAsFile();
-                uploadFile(pasteFile);
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(pasteFile);
+                $('#fileInput')[0].files = dataTransfer.files;
+                $('#fileInput').trigger('change');
                 break;
               }
             }
