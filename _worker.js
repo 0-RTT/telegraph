@@ -663,139 +663,142 @@ async function generateAdminPage(DATABASE) {
       }
     </style>
     <script>
-      let selectedCount = 0;
-      const selectedKeys = new Set();
-      let isAllSelected = false;
-
-      function toggleImageSelection(container) {
-        const key = container.getAttribute('data-key');
-        container.classList.toggle('selected');
-        const uploadTime = container.querySelector('.upload-time');
-        if (container.classList.contains('selected')) {
-          selectedKeys.add(key);
-          selectedCount++;
-          uploadTime.style.display = 'block';
-        } else {
-          selectedKeys.delete(key);
-          selectedCount--;
-          uploadTime.style.display = 'none';
-        }
-        updateDeleteButton();
+    let selectedCount = 0;
+    const selectedKeys = new Set();
+    let isAllSelected = false;
+  
+    function toggleImageSelection(container) {
+      const key = container.getAttribute('data-key');
+      container.classList.toggle('selected');
+      const uploadTime = container.querySelector('.upload-time');
+      if (container.classList.contains('selected')) {
+        selectedKeys.add(key);
+        selectedCount++;
+        uploadTime.style.display = 'block';
+      } else {
+        selectedKeys.delete(key);
+        selectedCount--;
+        uploadTime.style.display = 'none';
       }
-
-      function updateDeleteButton() {
-        const deleteButton = document.getElementById('delete-button');
-        const countDisplay = document.getElementById('selected-count');
-        countDisplay.textContent = selectedCount;
-        const headerRight = document.querySelector('.header-right');
-        if (selectedCount > 0) {
-          headerRight.classList.remove('hidden');
-        } else {
-          headerRight.classList.add('hidden');
-        }
+      updateDeleteButton();
+    }
+  
+    function updateDeleteButton() {
+      const deleteButton = document.getElementById('delete-button');
+      const countDisplay = document.getElementById('selected-count');
+      countDisplay.textContent = selectedCount;
+      const headerRight = document.querySelector('.header-right');
+      if (selectedCount > 0) {
+        headerRight.classList.remove('hidden');
+      } else {
+        headerRight.classList.add('hidden');
       }
-
-      async function deleteSelectedImages() {
-        if (selectedKeys.size === 0) return;
-        const response = await fetch('/delete-images', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(Array.from(selectedKeys))
-        });
-        if (response.ok) {
-          alert('选中的媒体已删除');
-          location.reload();
-        } else {
-          alert('删除失败');
-        }
-      }
-
-      function copyFormattedLinks(format) {
-        const urls = Array.from(selectedKeys).map(url => url.trim()).filter(url => url !== '');
-        let formattedLinks = '';
-        switch (format) {
-          case 'url':
-            formattedLinks = urls.join('\\n\\n');
-            break;
-          case 'bbcode':
-            formattedLinks = urls.map(url => '[img]' + url + '[/img]').join('\\n\\n');
-            break;
-          case 'markdown':
-            formattedLinks = urls.map(url => '![image](' + url + ')').join('\\n\\n');
-            break;
-        }
-        navigator.clipboard.writeText(formattedLinks).then(() => {
-          alert('复制成功');
-        }).catch((err) => {
-          alert('复制失败');
-        });
-      }
-
-      function selectAllImages() {
-        const mediaContainers = document.querySelectorAll('.media-container');
-        if (isAllSelected) {
-          mediaContainers.forEach(container => {
-            container.classList.remove('selected');
-            const key = container.getAttribute('data-key');
-            selectedKeys.delete(key);
-            container.querySelector('.upload-time').style.display = 'none';
-          });
-          selectedCount = 0;
-        } else {
-          mediaContainers.forEach(container => {
-            if (!container.classList.contains('selected')) {
-              container.classList.add('selected');
-              const key = container.getAttribute('data-key');
-              selectedKeys.add(key);
-              selectedCount++;
-              container.querySelector('.upload-time').style.display = 'block';
-            }
-          });
-        }
-        isAllSelected = !isAllSelected;
-        updateDeleteButton();
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
-        const mediaContainers = document.querySelectorAll('.media-container[data-key]');
-        const options = {
-          root: null,
-          rootMargin: '0px',
-          threshold: 0.1
-        };
-        
-        const mediaObserver = new IntersectionObserver((entries, observer) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              const container = entry.target;
-              const mediaType = container.querySelector('.media-type').textContent;
-
-              if (mediaType === '视频') {
-                const video = container.querySelector('video');
-                if (video && !video.src) {
-                  video.src = video.dataset.src;
-                  video.load();
-                  video.play();
-                }
-              } else {
-                const img = container.querySelector('img');
-                if (img && !img.src) {
-                  img.src = img.dataset.src;
-                  img.onload = () => img.classList.add('loaded');
-                }
-              }
-              observer.unobserve(container);
-            }
-          });
-        }, options);
-
-        mediaContainers.forEach(container => {
-          mediaObserver.observe(container);
-        });
+    }
+  
+    async function deleteSelectedImages() {
+      if (selectedKeys.size === 0) return;
+      const confirmation = confirm('你确定要删除选中的媒体文件吗？此操作无法撤销。');
+      if (!confirmation) return;
+  
+      const response = await fetch('/delete-images', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(Array.from(selectedKeys))
       });
-    </script>    
+      if (response.ok) {
+        alert('选中的媒体已删除');
+        location.reload();
+      } else {
+        alert('删除失败');
+      }
+    }
+  
+    function copyFormattedLinks(format) {
+      const urls = Array.from(selectedKeys).map(url => url.trim()).filter(url => url !== '');
+      let formattedLinks = '';
+      switch (format) {
+        case 'url':
+          formattedLinks = urls.join('\\n\\n');
+          break;
+        case 'bbcode':
+          formattedLinks = urls.map(url => '[img]' + url + '[/img]').join('\\n\\n');
+          break;
+        case 'markdown':
+          formattedLinks = urls.map(url => '![image](' + url + ')').join('\\n\\n');
+          break;
+      }
+      navigator.clipboard.writeText(formattedLinks).then(() => {
+        alert('复制成功');
+      }).catch((err) => {
+        alert('复制失败');
+      });
+    }
+  
+    function selectAllImages() {
+      const mediaContainers = document.querySelectorAll('.media-container');
+      if (isAllSelected) {
+        mediaContainers.forEach(container => {
+          container.classList.remove('selected');
+          const key = container.getAttribute('data-key');
+          selectedKeys.delete(key);
+          container.querySelector('.upload-time').style.display = 'none';
+        });
+        selectedCount = 0;
+      } else {
+        mediaContainers.forEach(container => {
+          if (!container.classList.contains('selected')) {
+            container.classList.add('selected');
+            const key = container.getAttribute('data-key');
+            selectedKeys.add(key);
+            selectedCount++;
+            container.querySelector('.upload-time').style.display = 'block';
+          }
+        });
+      }
+      isAllSelected = !isAllSelected;
+      updateDeleteButton();
+    }
+  
+    document.addEventListener('DOMContentLoaded', () => {
+      const mediaContainers = document.querySelectorAll('.media-container[data-key]');
+      const options = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+      };
+      
+      const mediaObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const container = entry.target;
+            const mediaType = container.querySelector('.media-type').textContent;
+  
+            if (mediaType === '视频') {
+              const video = container.querySelector('video');
+              if (video && !video.src) {
+                video.src = video.dataset.src;
+                video.load();
+                video.play();
+              }
+            } else {
+              const img = container.querySelector('img');
+              if (img && !img.src) {
+                img.src = img.dataset.src;
+                img.onload = () => img.classList.add('loaded');
+              }
+            }
+            observer.unobserve(container);
+          }
+        });
+      }, options);
+  
+      mediaContainers.forEach(container => {
+        mediaObserver.observe(container);
+      });
+    });
+  </script>
   </head>
   <body>
     <div class="header">
