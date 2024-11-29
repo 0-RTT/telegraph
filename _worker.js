@@ -619,6 +619,36 @@ async function generateAdminPage(DATABASE) {
       .hidden {
         display: none;
       }
+      .dropdown {
+        position: relative;
+        display: inline-block;
+      }
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      .dropdown-content button {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        background: none;
+        border: none;
+        width: 100%;
+        text-align: left;
+      }
+      .dropdown-content button:hover {
+        background-color: #f1f1f1;
+      }
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
       @media (max-width: 768px) {
         .header-left, .header-right {
           flex: 1 1 100%;
@@ -636,7 +666,7 @@ async function generateAdminPage(DATABASE) {
       let selectedCount = 0;
       const selectedKeys = new Set();
       let isAllSelected = false;
-  
+
       function toggleImageSelection(container) {
         const key = container.getAttribute('data-key');
         container.classList.toggle('selected');
@@ -652,7 +682,7 @@ async function generateAdminPage(DATABASE) {
         }
         updateDeleteButton();
       }
-  
+
       function updateDeleteButton() {
         const deleteButton = document.getElementById('delete-button');
         const countDisplay = document.getElementById('selected-count');
@@ -664,7 +694,7 @@ async function generateAdminPage(DATABASE) {
           headerRight.classList.add('hidden');
         }
       }
-  
+
       async function deleteSelectedImages() {
         if (selectedKeys.size === 0) return;
         const response = await fetch('/delete-images', {
@@ -681,18 +711,28 @@ async function generateAdminPage(DATABASE) {
           alert('删除失败');
         }
       }
-  
-      function copySelectedUrls() {
-        if (selectedKeys.size === 0) return;
-  
-        const urls = Array.from(selectedKeys).join('\\n');
-        navigator.clipboard.writeText(urls).then(() => {
+
+      function copyFormattedLinks(format) {
+        const urls = Array.from(selectedKeys).map(url => url.trim()).filter(url => url !== '');
+        let formattedLinks = '';
+        switch (format) {
+          case 'url':
+            formattedLinks = urls.join('\\n\\n');
+            break;
+          case 'bbcode':
+            formattedLinks = urls.map(url => '[img]' + url + '[/img]').join('\\n\\n');
+            break;
+          case 'markdown':
+            formattedLinks = urls.map(url => '![image](' + url + ')').join('\\n\\n');
+            break;
+        }
+        navigator.clipboard.writeText(formattedLinks).then(() => {
           alert('复制成功');
         }).catch((err) => {
           alert('复制失败');
         });
       }
-  
+
       function selectAllImages() {
         const mediaContainers = document.querySelectorAll('.media-container');
         if (isAllSelected) {
@@ -717,7 +757,7 @@ async function generateAdminPage(DATABASE) {
         isAllSelected = !isAllSelected;
         updateDeleteButton();
       }
-  
+
       document.addEventListener('DOMContentLoaded', () => {
         const mediaContainers = document.querySelectorAll('.media-container[data-key]');
         const options = {
@@ -731,7 +771,7 @@ async function generateAdminPage(DATABASE) {
             if (entry.isIntersecting) {
               const container = entry.target;
               const mediaType = container.querySelector('.media-type').textContent;
-  
+
               if (mediaType === '视频') {
                 const video = container.querySelector('video');
                 if (video && !video.src) {
@@ -750,7 +790,7 @@ async function generateAdminPage(DATABASE) {
             }
           });
         }, options);
-  
+
         mediaContainers.forEach(container => {
           mediaObserver.observe(container);
         });
@@ -764,7 +804,14 @@ async function generateAdminPage(DATABASE) {
         <span>已选中: <span id="selected-count">0</span>个</span>
       </div>
       <div class="header-right hidden">
-        <button id="copy-button" class="copy-button" onclick="copySelectedUrls()">复制</button>
+        <div class="dropdown">
+          <button class="copy-button">复制</button>
+          <div class="dropdown-content">
+            <button onclick="copyFormattedLinks('url')">URL</button>
+            <button onclick="copyFormattedLinks('bbcode')">BBCode</button>
+            <button onclick="copyFormattedLinks('markdown')">Markdown</button>
+          </div>
+        </div>
         <button id="select-all-button" class="delete-button" onclick="selectAllImages()">全选</button>
         <button id="delete-button" class="delete-button" onclick="deleteSelectedImages()">删除</button>
       </div>
