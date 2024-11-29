@@ -783,7 +783,6 @@ async function generateAdminPage(DATABASE) {
               if (video && !video.src) {
                 video.src = video.dataset.src;
                 video.load();
-                video.play();
               }
             } else {
               const img = container.querySelector('img');
