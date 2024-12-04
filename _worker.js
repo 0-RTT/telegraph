@@ -319,10 +319,28 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
               const item = clipboardData.items[i];
               if (item.kind === 'file') {
                 const pasteFile = item.getAsFile();
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(pasteFile);
-                $('#fileInput')[0].files = dataTransfer.files;
-                $('#fileInput').trigger('change');
+                const existingFiles = $('#fileInput')[0].files;
+                let isDuplicate = false;
+                
+                for (let j = 0; j < existingFiles.length; j++) {
+                  if (existingFiles[j].name === pasteFile.name && 
+                      existingFiles[j].size === pasteFile.size) {
+                    isDuplicate = true;
+                    break;
+                  }
+                }
+                
+                if (!isDuplicate) {
+                  const dataTransfer = new DataTransfer();
+                  for (let j = 0; j < existingFiles.length; j++) {
+                    dataTransfer.items.add(existingFiles[j]);
+                  }
+                  dataTransfer.items.add(pasteFile);
+                  $('#fileInput')[0].files = dataTransfer.files;
+                  $('#fileInput').trigger('change');
+                } else {
+                  toastr.warning('该文件已在上传队列中');
+                }
                 break;
               }
             }
