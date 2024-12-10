@@ -235,7 +235,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
             const interfaceInfo = {
               acceptTypes: 'image/*,video/*',
               maxFileSize: 20 * 1024 * 1024,
-              enableCompression: true
+              enableCompression: false
             };
             const acceptedTypes = interfaceInfo.acceptTypes.split(',');
             const isAcceptedType = acceptedTypes.some(type => {
