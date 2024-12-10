@@ -150,7 +150,10 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
   <div class="card">
       <div class="title">Telegraph图床</div>
       <button type="button" class="btn" id="viewCacheBtn" title="查看历史记录"><i class="fas fa-clock"></i></button>
-      <a href="/admin" title="后台管理"><i class="fa-regular fa-bars"></i></a>
+      //自己添加的按钮
+      <button type="button" class="btn" id="adminBtn" title="后台管理" style="position: absolute; top: 10px; right: 50px; background: none; border: none; color: rgba(0, 0, 0, 0.1); cursor: pointer; font-size: 24px; transition: color 0.3s ease;" onclick="window.open('/admin', '_blank')">
+        <i class="fas fa-bars"></i>
+      </button>
       <div class="card-body">
           <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
               <div class="file-input-container">
