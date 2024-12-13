@@ -371,19 +371,12 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
           }
         });
     
-        async function compressImage(file, quality = 0.5, maxResolution = 20000000) {
+        async function compressImage(file, quality = 0.75) {
           return new Promise((resolve) => {
             const image = new Image();
             image.onload = () => {
-              const width = image.width;
-              const height = image.height;
-              const resolution = width * height;
-              let scale = 1;
-              if (resolution > maxResolution) {
-                scale = Math.sqrt(maxResolution / resolution);
-              }
-              const targetWidth = Math.round(width * scale);
-              const targetHeight = Math.round(height * scale);
+              const targetWidth = image.width;
+              const targetHeight = image.height;
               const canvas = document.createElement('canvas');
               const ctx = canvas.getContext('2d');
               canvas.width = targetWidth;
