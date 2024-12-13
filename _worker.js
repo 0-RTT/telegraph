@@ -27,8 +27,6 @@ export default {
   }
 };
 
-let isAuthenticated = false;
-
 function authenticate(request, USERNAME, PASSWORD) {
   const authHeader = request.headers.get('Authorization');
   if (!authHeader) return false;
