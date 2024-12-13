@@ -20,7 +20,7 @@ export default {
       case '/bing-images':
         return handleBingImagesRequest();
       case '/delete-images':
-        return handleDeleteImagesRequest(request, DATABASE);
+        return await handleDeleteImagesRequest(request, DATABASE, USERNAME, PASSWORD);
       default:
         return await handleImageRequest(request, DATABASE, TG_BOT_TOKEN);
     }
@@ -985,7 +985,10 @@ async function handleBingImagesRequest(request) {
   return response;
 }
 
-async function handleDeleteImagesRequest(request, DATABASE) {
+async function handleDeleteImagesRequest(request, DATABASE, USERNAME, PASSWORD) {
+  if (!authenticate(request, USERNAME, PASSWORD)) {
+    return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="Admin"' } });
+  }
   if (request.method !== 'POST') {
     return new Response('Method Not Allowed', { status: 405 });
   }
