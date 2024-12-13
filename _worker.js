@@ -225,11 +225,49 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
         async function handleFileSelection() {
           const files = $('#fileInput')[0].files;
           for (let i = 0; i < files.length; i++) {
-            await uploadFile(files[i]);
+            const file = files[i];
+            const fileHash = await calculateFileHash(file);
+            const cachedData = getCachedData(fileHash);
+            if (cachedData) {
+                handleCachedFile(cachedData);
+            } else {
+                await uploadFile(file, fileHash);
+            }
           }
         }
     
-        async function uploadFile(file) {
+        function getCachedData(fileHash) {
+            const cacheData = JSON.parse(localStorage.getItem('uploadCache')) || [];
+            return cacheData.find(item => item.hash === fileHash);
+        }
+    
+        function handleCachedFile(cachedData) {
+            if (!originalImageURLs.includes(cachedData.url)) {
+                originalImageURLs.push(cachedData.url);
+                updateFileLinkDisplay();
+                toastr.info('已从缓存中读取数据');
+            }
+        }
+    
+        function updateFileLinkDisplay() {
+            $('#fileLink').val(originalImageURLs.join('\\n\\n'));
+            $('.form-group').show();
+            adjustTextareaHeight($('#fileLink')[0]);
+        }
+    
+        async function calculateFileHash(file) {
+          const arrayBuffer = await file.arrayBuffer();
+          const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+        }
+    
+        function isFileInCache(fileHash) {
+          const cacheData = JSON.parse(localStorage.getItem('uploadCache')) || [];
+          return cacheData.some(item => item.hash === fileHash);
+        }
+    
+        async function uploadFile(file, fileHash) {
           try {
             toastr.info('上传中...', '', { timeOut: 0 });
             const interfaceInfo = {
@@ -262,7 +300,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
                 $('.form-group').show();
                 adjustTextareaHeight($('#fileLink')[0]);
                 toastr.success('文件上传成功！');
-                saveToLocalCache(responseData.data, file.name);
+                saveToLocalCache(responseData.data, file.name, fileHash);
               }
               return;
             }
@@ -292,7 +330,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
               $('.form-group').show();
               adjustTextareaHeight($('#fileLink')[0]);
               toastr.success('文件上传成功！');
-              saveToLocalCache(responseData.data, file.name);
+              saveToLocalCache(responseData.data, file.name, fileHash);
             }
           } catch (error) {
             console.error('处理文件时出现错误:', error);
@@ -312,35 +350,21 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
           }
         }
     
-        $(document).on('paste', function(event) {
+        $(document).on('paste', async function(event) {
           const clipboardData = event.originalEvent.clipboardData;
           if (clipboardData && clipboardData.items) {
             for (let i = 0; i < clipboardData.items.length; i++) {
               const item = clipboardData.items[i];
               if (item.kind === 'file') {
                 const pasteFile = item.getAsFile();
+                const dataTransfer = new DataTransfer();
                 const existingFiles = $('#fileInput')[0].files;
-                let isDuplicate = false;
-                
                 for (let j = 0; j < existingFiles.length; j++) {
-                  if (existingFiles[j].name === pasteFile.name && 
-                      existingFiles[j].size === pasteFile.size) {
-                    isDuplicate = true;
-                    break;
-                  }
+                  dataTransfer.items.add(existingFiles[j]);
                 }
-                
-                if (!isDuplicate) {
-                  const dataTransfer = new DataTransfer();
-                  for (let j = 0; j < existingFiles.length; j++) {
-                    dataTransfer.items.add(existingFiles[j]);
-                  }
-                  dataTransfer.items.add(pasteFile);
-                  $('#fileInput')[0].files = dataTransfer.files;
-                  $('#fileInput').trigger('change');
-                } else {
-                  toastr.warning('该文件已在上传队列中');
-                }
+                dataTransfer.items.add(pasteFile);
+                $('#fileInput')[0].files = dataTransfer.files;
+                $('#fileInput').trigger('change');
                 break;
               }
             }
@@ -434,10 +458,10 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
           $('#urlBtn, #bbcodeBtn, #markdownBtn, #fileLink').parent('.form-group').hide();
         }
     
-        function saveToLocalCache(url, fileName) {
+        function saveToLocalCache(url, fileName, fileHash) {
           const timestamp = new Date().toLocaleString('zh-CN', { hour12: false });
           const cacheData = JSON.parse(localStorage.getItem('uploadCache')) || [];
-          cacheData.push({ url, fileName, timestamp });
+          cacheData.push({ url, fileName, hash: fileHash, timestamp });
           localStorage.setItem('uploadCache', JSON.stringify(cacheData));
         }
     
@@ -718,7 +742,7 @@ async function generateAdminPage(DATABASE) {
   
     async function deleteSelectedImages() {
       if (selectedKeys.size === 0) return;
-      const confirmation = confirm('你确定要删除选中的媒体文件吗？此操作无法撤销。');
+      const confirmation = confirm('你确定要删除选中的媒体文件吗？此操作无法撤回。');
       if (!confirmation) return;
   
       const response = await fetch('/delete-images', {
