@@ -108,6 +108,20 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
       #viewCacheBtn:hover {
           color: rgba(0, 0, 0, 0.4);
       }
+      #compressionToggleBtn {
+          position: absolute;
+          top: 10px;
+          right: 50px;
+          background: none;
+          border: none;
+          color: rgba(0, 0, 0, 0.1);
+          cursor: pointer;
+          font-size: 24px;
+          transition: color 0.3s ease;
+      }
+      #compressionToggleBtn:hover {
+          color: rgba(0, 0, 0, 0.4);
+      }
       #cacheContent {
           margin-top: 20px;
           max-height: 200px;
@@ -148,6 +162,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
   <div class="card">
       <div class="title">Telegraph图床</div>
       <button type="button" class="btn" id="viewCacheBtn" title="查看历史记录"><i class="fas fa-clock"></i></button>
+      <button type="button" class="btn" id="compressionToggleBtn"><i class="fas fa-compress"></i></button>
       <div class="card-body">
           <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
               <div class="file-input-container">
@@ -205,8 +220,19 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
       $(document).ready(function() {
         let originalImageURLs = [];
         let isCacheVisible = false;
+        let enableCompression = true;
         initFileInput();
         setBackgroundImages();
+    
+        const tooltipText = enableCompression ? '关闭压缩' : '开启压缩';
+        $('#compressionToggleBtn').attr('title', tooltipText);
+        $('#compressionToggleBtn').on('click', function() {
+            enableCompression = !enableCompression;
+            const icon = $(this).find('i');
+            icon.toggleClass('fa-compress fa-expand');
+            const tooltipText = enableCompression ? '关闭压缩' : '开启压缩';
+            $(this).attr('title', tooltipText);
+        });
     
         function initFileInput() {
           $("#fileInput").fileinput({
@@ -271,7 +297,7 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
             const interfaceInfo = {
               acceptTypes: 'image/*,video/*',
               maxFileSize: 20 * 1024 * 1024,
-              enableCompression: true
+              enableCompression: enableCompression
             };
             const acceptedTypes = interfaceInfo.acceptTypes.split(',');
             const isAcceptedType = acceptedTypes.some(type => {
