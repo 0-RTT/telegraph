@@ -1,8 +1,8 @@
-🎉基于R2储存的图床项目已完成，欢迎部署测试👉[JSimages](https://github.com/0-RTT/JSimages)
+🎉基于R2储存的图床/视频床/文件床项目已完成，欢迎部署测试👉[JSimages](https://github.com/0-RTT/JSimages)
 
 # Telegraph 图床
 
-基于 Cloudflare Workers 和 Pages 的图床服务。
+基于 Cloudflare Workers 和 Pages 的图床/视频床/文件床服务。
 
 ## 功能特点
 
