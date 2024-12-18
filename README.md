@@ -1,8 +1,7 @@
 🎉基于R2储存的图床/视频床/文件床项目已完成，欢迎部署测试👉[JSimages](https://github.com/0-RTT/JSimages)
 
-# Telegraph 图床
-
-基于 Cloudflare Workers 和 Pages 的图床/视频床/文件床服务。
+# 介绍
+基于 Cloudflare Worker 和 Pages 以及TG_BOT的图床/视频床/文件床服务
 
 ## 功能特点
 
@@ -85,7 +84,7 @@
 
 ## 部署步骤
 
-### 1. 环境变量说明
+### 1. 变量说明
 需要在 Cloudflare Workers 中配置以下环境变量:
 
 | 变量名 | 说明 | 必填 | 示例 |
@@ -98,7 +97,7 @@
 | PASSWORD | 管理员密码 | 是 | password123 |
 | ADMIN_PATH | 管理后台路径 | 是 | admin |
 | ENABLE_AUTH | 访客验证（设置为 true 开启，不设置或设置为 false 则关闭） | 否 | false |
-| MAX_SIZE_MB | 单文件最大支持大小（MB） | 否 | 20 |
+| MAX_SIZE_MB | 单文件最大支持大小（单位：MB，默认值为 20） | 否 | 20 |
 
 ### 2. 创建 Telegram Bot
 1. 在 Telegram 中找到 [@BotFather](https://t.me/BotFather)
@@ -140,18 +139,24 @@ CREATE TABLE media (
 5. 点击 `部署` 创建 Worker
 6. 点击继续处理项目
 
-### 6. 配置环境变量
+### 6. 配置变量和机密
 1. 在 Worker 的 `设置` → `变量和机密` 中
-2. 点击 `添加` 添加变量
+2. 根据需要逐个点击 `添加` 添加以下变量
+   - DOMAIN
+   - TG_BOT_TOKEN
+   - TG_CHAT_ID
+   - USERNAME
+   - PASSWORD
+   - ADMIN_PATH
+   - ENABLE_AUTH（可选）
+   - MAX_SIZE_MB（可选）
 3. 点击 `部署`
 
 ### 7. 绑定数据库
 1. 在 Worker 设置页面找到 `设置` → `绑定`
-2. 点击 `添加`
-3. 选择 `D1数据库`
-4. 设置变量名为 `DATABASE`
-5. 选择之前创建的数据库
-6. 点击 `部署`
+2. 点击 `添加` 添加以下变量名称
+   - DATABASE
+3. 点击 `部署`
 
 ### 8. 绑定域名
 1. 在 Worker 的 `设置` → `域和路由`
@@ -161,7 +166,7 @@ CREATE TABLE media (
 5. 等待域名生效
 
 ### 9. 部署代码
-1. ��入 Worker 的编辑页面
+1. 进入你的worker项目 → 点击编辑代码
 2. 将 `_worker.js` 的完整代码复制粘贴到编辑器中
 3. 点击 `部署`
 
