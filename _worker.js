@@ -547,18 +547,23 @@ async function generateAdminPage(DATABASE) {
   const mediaHtml = mediaData.map(({ url }) => {
     const fileExtension = url.split('.').pop().toLowerCase();
     const timestamp = url.split('/').pop().split('.')[0];
-    const mediaType = fileExtension === 'mp4' ? '视频' : '图片';
-    
+    const mediaType = fileExtension;
+    let displayUrl = url;
+    const supportedImageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff', 'svg'];
+    const supportedVideoExtensions = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'mkv', 'webm'];
+    const isSupported = [...supportedImageExtensions, ...supportedVideoExtensions].includes(fileExtension);
+    const backgroundStyle = isSupported ? '' : `style="font-size: 50px; display: flex; justify-content: center; align-items: center;"`;
+    const icon = isSupported ? '' : '📁';
     return `
-    <div class="media-container" data-key="${url}" onclick="toggleImageSelection(this)">
+    <div class="media-container" data-key="${url}" onclick="toggleImageSelection(this)" ${backgroundStyle}>
       <div class="media-type">${mediaType}</div>
-      ${mediaType === '视频' ? `
-        <video class="gallery-video" style="width: 100%; height: 100%; object-fit: contain;" data-src="${url}" controls>
-          <source src="" type="video/mp4">
+      ${supportedVideoExtensions.includes(fileExtension) ? `
+        <video class="gallery-video" preload="none" style="width: 100%; height: 100%; object-fit: contain;" controls>
+          <source data-src="${displayUrl}" type="video/${fileExtension}">
           您的浏览器不支持视频标签。
         </video>
       ` : `
-        <img class="gallery-image lazy" data-src="${url}" alt="Image">
+        ${isSupported ? `<img class="gallery-image lazy" data-src="${displayUrl}" alt="Image">` : icon}
       `}
       <div class="upload-time">上传时间: ${new Date(parseInt(timestamp)).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}</div>
     </div>
@@ -835,18 +840,15 @@ async function generateAdminPage(DATABASE) {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             const container = entry.target;
-            const mediaType = container.querySelector('.media-type').textContent;
-  
-            if (mediaType === '视频') {
-              const video = container.querySelector('video');
-              if (video && !video.src) {
-                video.src = video.dataset.src;
-                video.load();
-              }
+            const video = container.querySelector('video');
+            if (video) {
+              const source = video.querySelector('source');
+              video.src = source.getAttribute('data-src');
+              video.load();
             } else {
               const img = container.querySelector('img');
               if (img && !img.src) {
-                img.src = img.dataset.src;
+                img.src = img.getAttribute('data-src');
                 img.onload = () => img.classList.add('loaded');
               }
             }
