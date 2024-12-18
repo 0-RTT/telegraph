@@ -295,52 +295,12 @@ async function handleRootRequest(request, USERNAME, PASSWORD, enableAuth) {
           try {
             toastr.info('上传中...', '', { timeOut: 0 });
             const interfaceInfo = {
-              acceptTypes: 'image/*,video/*',
-              maxFileSize: 20 * 1024 * 1024,
               enableCompression: enableCompression
             };
-            const acceptedTypes = interfaceInfo.acceptTypes.split(',');
-            const isAcceptedType = acceptedTypes.some(type => {
-              return type.includes('*') ? file.type.startsWith(type.split('/')[0]) : file.type === type;
-            });
-            if (!isAcceptedType) {
-              toastr.error('仅支持图片或视频格式的文件。');
-              return;
-            }
-            if (file.type.startsWith('video/') || file.type === 'image/gif') {
-              if (file.size > interfaceInfo.maxFileSize) {
-                toastr.error('视频或 GIF 文件必须≤20MB，上传失败。');
-                return;
-              }
-              const formData = new FormData($('#uploadForm')[0]);
-              formData.set('file', file, file.name);
-              const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
-              const responseData = await handleUploadResponse(uploadResponse);
-              if (responseData.error) {
-                toastr.error(responseData.error);
-              } else {
-                originalImageURLs.push(responseData.data);
-                $('#fileLink').val(originalImageURLs.join('\\n\\n'));
-                $('.form-group').show();
-                adjustTextareaHeight($('#fileLink')[0]);
-                toastr.success('文件上传成功！');
-                saveToLocalCache(responseData.data, file.name, fileHash);
-              }
-              return;
-            }
-            if (interfaceInfo.enableCompression) {
+            if (file.type.startsWith('image/') && file.type !== 'image/gif' && interfaceInfo.enableCompression) {
               toastr.info('正在压缩...', '', { timeOut: 0 });
               const compressedFile = await compressImage(file);
-              if (compressedFile.size > interfaceInfo.maxFileSize) {
-                toastr.error('压缩后文件仍然超过最大限制（20MB），上传失败。');
-                return;
-              }
               file = compressedFile;
-            } else {
-              if (file.size > interfaceInfo.maxFileSize) {
-                toastr.error('文件必须≤20MB');
-                return;
-              }
             }
             const formData = new FormData($('#uploadForm')[0]);
             formData.set('file', file, file.name);
