@@ -9,7 +9,7 @@ export default {
     const enableAuth = env.ENABLE_AUTH === 'true';
     const TG_BOT_TOKEN = env.TG_BOT_TOKEN;
     const TG_CHAT_ID = env.TG_CHAT_ID;
-    const maxSizeMB = env.MAX_SIZE_MB ? parseInt(env.MAX_SIZE_MB, 10) : 10;
+    const maxSizeMB = env.MAX_SIZE_MB ? parseInt(env.MAX_SIZE_MB, 10) : 20;
     const maxSize = maxSizeMB * 1024 * 1024;
 
     switch (pathname) {
