@@ -263,7 +263,7 @@ CREATE TABLE media (
 
 MIT License
 
-## 鸣谢
+## 💰赞助商
 
-- [Cloudflare](https://www.cloudflare.com/)
-- [Telegram](https://telegram.org/)
+- [NodeSupport](https://github.com/NodeSeekDev/NodeSupport)
+- [![yxvm_support.png](https://kycloud3.koyoo.cn/20250411e0a01202504111413152588.png)](https://yxvm.com/)
