@@ -1584,8 +1584,7 @@ async function handleUploadRequest(request, config) {
     const fileExtension = getFileExtension(file.name);
     const timestamp = Date.now();
     const isImage = CONTENT_TYPE_MAP[fileExtension]?.startsWith('image/');
-    const imageDomain = isImage ? `pic.${config.domain}` : config.domain;
-    const imageURL = `https://${imageDomain}/${timestamp}.${fileExtension}`;
+    const imageURL = `https://${config.domain}/${timestamp}.${fileExtension}`;
     await config.database.prepare(
       'INSERT INTO media (url, fileId) VALUES (?, ?) ON CONFLICT(url) DO NOTHING'
     ).bind(imageURL, fileId).run();
