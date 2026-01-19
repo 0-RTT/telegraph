@@ -283,6 +283,66 @@ async function handleRootRequest(request, config) {
           color: #667eea;
           letter-spacing: 0.5px;
       }
+      .thumbnail-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin-top: 15px;
+          justify-content: center;
+      }
+      .thumbnail-item {
+          position: relative;
+          width: 80px;
+          height: 80px;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          transition: transform 0.2s ease;
+      }
+      .thumbnail-item:hover {
+          transform: scale(1.05);
+      }
+      .thumbnail-item img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+      }
+      .thumbnail-item video {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+      }
+      .thumbnail-item .file-icon {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          font-size: 24px;
+      }
+      .thumbnail-item .remove-btn {
+          position: absolute;
+          top: 2px;
+          right: 2px;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: rgba(0, 0, 0, 0.6);
+          color: white;
+          border: none;
+          cursor: pointer;
+          font-size: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transition: opacity 0.2s ease;
+      }
+      .thumbnail-item:hover .remove-btn {
+          opacity: 1;
+      }
       .btn-primary {
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
           border: none !important;
@@ -384,6 +444,7 @@ async function handleRootRequest(request, config) {
               <div class="upload-progress" id="uploadProgress">
                   <div class="progress-text" id="progressText">上传中... 0%</div>
               </div>
+              <div class="thumbnail-container" id="thumbnailContainer"></div>
               <div id="cacheContent" style="display: none;"></div>
           </form>
       </div>
@@ -450,6 +511,7 @@ async function handleRootRequest(request, config) {
     
       $(document).ready(function() {
         let originalImageURLs = [];
+        let thumbnailData = [];
         let isCacheVisible = false;
         let enableCompression = true;
         initFileInput();
@@ -509,7 +571,66 @@ async function handleRootRequest(request, config) {
             $('.form-group').show();
             adjustTextareaHeight($('#fileLink')[0]);
         }
-    
+
+        function addThumbnail(file, url) {
+            const container = $('#thumbnailContainer');
+            const index = thumbnailData.length;
+            const previewUrl = URL.createObjectURL(file);
+            thumbnailData.push({ previewUrl, url, file });
+
+            let thumbnailContent = '';
+            if (file.type.startsWith('image/')) {
+                thumbnailContent = '<img src="' + previewUrl + '" alt="thumbnail">';
+            } else if (file.type.startsWith('video/')) {
+                thumbnailContent = '<video src="' + previewUrl + '" muted></video>';
+            } else {
+                const ext = file.name.split('.').pop().toUpperCase();
+                thumbnailContent = '<div class="file-icon">' + ext + '</div>';
+            }
+
+            const thumbnailHtml = '<div class="thumbnail-item" data-index="' + index + '">' +
+                thumbnailContent +
+                '<button class="remove-btn" title="移除">&times;</button>' +
+            '</div>';
+
+            container.append(thumbnailHtml);
+        }
+
+        function removeThumbnail(index) {
+            const item = thumbnailData[index];
+            if (item && item.previewUrl) {
+                URL.revokeObjectURL(item.previewUrl);
+            }
+            thumbnailData[index] = null;
+
+            const urlToRemove = item ? item.url : null;
+            if (urlToRemove) {
+                originalImageURLs = originalImageURLs.filter(u => u !== urlToRemove);
+                updateFileLinkDisplay();
+                if (originalImageURLs.length === 0) {
+                    hideButtonsAndTextarea();
+                }
+            }
+
+            $('.thumbnail-item[data-index="' + index + '"]').remove();
+        }
+
+        function clearAllThumbnails() {
+            thumbnailData.forEach(item => {
+                if (item && item.previewUrl) {
+                    URL.revokeObjectURL(item.previewUrl);
+                }
+            });
+            thumbnailData = [];
+            $('#thumbnailContainer').empty();
+        }
+
+        $(document).on('click', '.thumbnail-item .remove-btn', function(e) {
+            e.stopPropagation();
+            const index = $(this).parent().data('index');
+            removeThumbnail(index);
+        });
+
         async function calculateFileHash(file) {
           const chunkSize = 1024 * 1024;
           const chunk = file.size > chunkSize ? file.slice(0, chunkSize) : file;
@@ -526,6 +647,7 @@ async function handleRootRequest(request, config) {
         }
     
         async function uploadFile(file, fileHash) {
+          const originalFile = file;
           try {
             const interfaceInfo = {
               enableCompression: enableCompression
@@ -578,6 +700,7 @@ async function handleRootRequest(request, config) {
               toastr.error(responseData.error);
             } else {
               originalImageURLs.push(responseData.data);
+              addThumbnail(originalFile, responseData.data);
               $('#fileLink').val(originalImageURLs.join('\\n\\n'));
               $('.form-group').show();
               adjustTextareaHeight($('#fileLink')[0]);
@@ -699,6 +822,7 @@ async function handleRootRequest(request, config) {
           adjustTextareaHeight($('#fileLink')[0]);
           hideButtonsAndTextarea();
           originalImageURLs = [];
+          clearAllThumbnails();
         }
     
         function adjustTextareaHeight(textarea) {
@@ -1459,7 +1583,9 @@ async function handleUploadRequest(request, config) {
     if (!fileId) throw new Error('返回的数据中没有文件 ID');
     const fileExtension = getFileExtension(file.name);
     const timestamp = Date.now();
-    const imageURL = `https://${config.domain}/${timestamp}.${fileExtension}`;
+    const isImage = CONTENT_TYPE_MAP[fileExtension]?.startsWith('image/');
+    const imageDomain = isImage ? `pic.${config.domain}` : config.domain;
+    const imageURL = `https://${imageDomain}/${timestamp}.${fileExtension}`;
     await config.database.prepare(
       'INSERT INTO media (url, fileId) VALUES (?, ?) ON CONFLICT(url) DO NOTHING'
     ).bind(imageURL, fileId).run();
