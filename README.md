@@ -20,13 +20,26 @@
 - ⏰ 显示文件上传时间
 - 📋 支持多种格式复制链接（URL、BBCode、Markdown）
 
+### 界面与交互
+- 🪟 **苹果液态玻璃（Liquid Glass）视觉风格**
+  - 卡片、按钮、下拉菜单、分页器、输入框全部使用 `backdrop-filter` 毛玻璃
+  - 多层 `inset box-shadow` 模拟玻璃边缘高光与折射
+  - 卡片支持鼠标跟随镜面高光（pointermove 实时更新 `--mx / --my`）
+  - 卡片入场动画：`cubic-bezier(0.22, 1, 0.36, 1)` 缓动
+- 🔔 **右上角玻璃 Toast 通知**
+  - 淡入淡出（opacity + translateY + scale），约 320–420ms 缓动
+  - 提示文案精简（如"上传成功"/"上传失败"/"复制成功"/"命中缓存"）
+  - 支持 `success` / `error` / `warning` / `info` 四种状态，用彩色小圆点区分
+  - 多条通知在右上角自动堆叠
+- 🪟 **玻璃确认框**：删除等危险操作使用玻璃风格弹窗替代原生 `confirm()`
+- 📱 响应式设计，移动端 Toast 自动撑满左右两侧
+
 ### 性能优化
 - ⚡ Cloudflare Cache API 缓存支持
 - 🎨 懒加载和骨架屏优化
 - 🌅 Bing 每日壁纸背景（自动轮播）
-- 📱 响应式设计，支持移动端
 - 🔁 获取文件路径自动重试（最多 3 次，带退避）
-- 🪶 首页零外部依赖（无 jQuery / Bootstrap / FontAwesome / toastr）
+- 🪶 **首页与管理页均零外部依赖**（无 jQuery / Bootstrap / FontAwesome / toastr / 任何 CDN 资源）
 
 ### 存储方式
 - 📡 基于 Telegram Bot API 的文件存储
@@ -35,10 +48,20 @@
 
 ## 更新日志
 
-> **最近更新**: 2026-09-12
+> **最近更新**: 2026-09-13
 
 <details>
 <summary>历史更新记录</summary>
+
+### 2026-09-13
+- **UI 重构为苹果液态玻璃（Liquid Glass）风格**：卡片、按钮、下拉菜单、分页器、输入框、确认框全部毛玻璃化
+- 卡片新增鼠标跟随镜面高光效果（`pointermove` 实时更新高光位置）
+- **通知系统重构**：从固定位置提示改为右上角玻璃 Toast，淡入淡出，多通知自动堆叠
+- 通知文案精简：上传/复制/缓存命中/压缩开关等只保留简短提示（如"上传成功"/"上传失败"）
+- 管理页删除等危险操作改用玻璃风格 `glassConfirm()` 弹窗，替代原生 `confirm()`
+- 管理页操作结果改用玻璃 Toast 提示，替代原生 `alert()`
+- 兼容旧调用：`window.showToast(text, type, duration)` 保留原有调用签名
+- 首页与管理后台样式独立打包，互不干扰
 
 ### 2026-09-12
 - 移除首页的 jQuery / Bootstrap / Fileinput / FontAwesome / toastr 外部依赖，改为原生实现，首屏体积从约 220 KB 降到约 12 KB
@@ -155,44 +178,3 @@ CREATE TABLE media (
     url TEXT PRIMARY KEY,
     fileId TEXT NOT NULL
 );
-```
-
-### 部署流程
-
-1. 创建 Telegram Bot，保存 Bot Token
-2. 创建 Telegram 频道或群组，将 Bot 设为管理员，获取 Chat ID
-3. 创建 D1 数据库（建议选择 `亚太地区` 以获得更好速度），并建好 `media` 表
-4. 创建 Worker，绑定上述 D1 数据库
-5. 配置环境变量
-6. 将 `_worker.js` 代码粘贴到 Worker 编辑器中并部署
-7. 为 Worker 绑定自定义域名
-8. （推荐）为自定义域名配置 Cache Rules，边缘 TTL 设置为 30 天或按需调整
-
-### 上传格式说明
-
-支持的扩展名（服务端白名单，非白名单文件将被拒绝）：
-
-- **图片**：`jpg` `jpeg` `png` `gif` `webp` `bmp` `svg`
-- **视频**：`mp4` `avi` `mov` `webm`
-
-> SVG 会以附件形式返回，避免在浏览器中直接执行其中的脚本。
->
-> GIF 上传时会改名为 `.jpeg` 并以 `image/jpeg` 类型发送到 Telegram，URL 仍以 `.gif` 结尾（这是为了解决 Telegram 对 GIF 的处理限制，属预期行为）。
-
-### 压缩说明
-
-- 前端压缩默认开启，可点击主页右上角按钮切换
-- 压缩仅对图片生效（GIF 除外），压缩后统一转为 JPEG
-- 压缩后文件名扩展名会自动改为 `.jpg`，保证内容、文件名和 MIME 一致
-- 如不希望压缩影响画质（如透明 PNG 会丢失透明通道），可在首页关闭压缩
-
-### 已知限制
-
-- **视频不支持拖动进度条**：Telegram API 不返回 Range 数据，Worker 无法代理 Range 请求，因此视频只能从头播放。
-- **删除只删 D1 记录和 CDN 缓存**：Telegram 端的文件依然存在（Bot 无删除权限），但不会再从本站访问到。
-- **首次访问有延迟**：每个 URL 在 CDN 冷启动时需要两次 Telegram API 调用（`getFile` + 下载文件），大约多 0.5~1 秒。命中 CDN 后恢复正常速度。
-- **受 Telegram 文件大小限制**：Bot API 下载文件上限为 20MB，请勿将 `MAX_SIZE_MB` 设置超过此值。
-
-## 开源协议
-
-MIT License
