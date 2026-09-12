@@ -143,9 +143,9 @@ async function handleRootRequest(request, config) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="JSimages-基于CloudFlare的图床服务">
-<meta name="keywords" content="JSimages,Workers图床,Telegram,图床,Cloudflare,Workers">
-<title>JSimages-基于CloudFlare的图床服务</title>
+<meta name="description" content="Telegraph图床-基于Workers的图床服务">
+<meta name="keywords" content="Telegraph图床,Workers图床,Telegram,图床,Cloudflare,Workers">
+<title>Telegraph图床-基于Workers的图床服务</title>
 <link rel="icon" href="https://p1.meituan.net/csc/c195ee91001e783f39f41ffffbbcbd484286.ico" type="image/x-icon">
 <style>
   * { box-sizing: border-box; }
@@ -443,7 +443,7 @@ async function handleRootRequest(request, config) {
   <div class="background" id="bg2" style="opacity: 0;"></div>
 
   <div class="card">
-    <div class="title">JSimages</div>
+    <div class="title">Telegraph图床</div>
 
     <button type="button" class="icon-btn" id="viewCacheBtn" title="查看历史记录" aria-label="查看历史记录">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -497,7 +497,7 @@ async function handleRootRequest(request, config) {
 
     <p class="project-link">
       项目开源于 GitHub -
-      <a href="https://github.com/0-RTT/JSimages" target="_blank" rel="noopener noreferrer">0-RTT/JSimages</a>
+      <a href="https://github.com/0-RTT/telegraph" target="_blank" rel="noopener noreferrer">0-RTT/telegraph</a>
     </p>
   </div>
 
