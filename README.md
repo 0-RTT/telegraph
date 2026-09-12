@@ -1,8 +1,6 @@
-🎉基于R2储存的图床/视频床/文件床项目已完成，欢迎部署测试👉[JSimages](https://github.com/0-RTT/JSimages)
-
 # Telegraph图床
 
-基于 Cloudflare Worker 和 Pages 以及 Telegram Bot API 的图床/视频床/文件床服务
+基于 Cloudflare Worker 和 Telegram Bot API 的图床 / 视频床 / 文件床服务
 
 ## 功能特点
 
@@ -10,14 +8,15 @@
 - 🔐 可选的访客验证功能（Basic Auth）
 - 🗜️ 可选的图片压缩功能（默认开启，支持前端切换）
 - 📦 可选的文件大小限制（默认 20MB，可通过环境变量配置）
-- 📁 支持所有文件格式上传（图片、视频、文档等）
+- 📁 支持图片、视频等常见媒体格式上传（白名单校验，防止存储型 XSS）
 - 📤 支持多文件上传、拖拽上传和粘贴上传（Ctrl+V）
 - 🔄 哈希校验避免重复上传
+- 🚀 多文件并发上传（默认 4 路并发）
 
 ### 管理功能
 - 📋 支持查看本地历史记录
 - 🖼️ 图库管理界面，支持批量操作
-- 🗑️ 支持批量删除文件（同步删除数据库记录和缓存）
+- 🗑️ 支持批量删除文件（同步删除数据库记录和 CDN 缓存）
 - ⏰ 显示文件上传时间
 - 📋 支持多种格式复制链接（URL、BBCode、Markdown）
 
@@ -26,7 +25,8 @@
 - 🎨 懒加载和骨架屏优化
 - 🌅 Bing 每日壁纸背景（自动轮播）
 - 📱 响应式设计，支持移动端
-- 🔁 自动重试机制（获取文件路径最多重试3次）
+- 🔁 获取文件路径自动重试（最多 3 次，带退避）
+- 🪶 首页零外部依赖（无 jQuery / Bootstrap / FontAwesome / toastr）
 
 ### 存储方式
 - 📡 基于 Telegram Bot API 的文件存储
@@ -35,17 +35,36 @@
 
 ## 更新日志
 
-> **最近更新**: 2026-01-19
-> - 使用Claude优化了一下代码
+> **最近更新**: 2026-09-12
 
 <details>
 <summary>历史更新记录</summary>
 
+### 2026-09-12
+- 移除首页的 jQuery / Bootstrap / Fileinput / FontAwesome / toastr 外部依赖，改为原生实现，首屏体积从约 220 KB 降到约 12 KB
+- 上传 key 增加随机后缀，修复同毫秒并发上传互相覆盖的问题
+- 上传扩展名白名单校验，阻止 `.html` / `.js` 等文件上传
+- 上传鉴权前置，未授权请求不再消耗 Telegram API 配额
+- 删除接口校验 URL 归属，只允许删除本站域名下的文件
+- 图片响应增加 `X-Content-Type-Options: nosniff`
+- SVG 强制以附件形式下载，配合严格 CSP 防止存储型 XSS
+- Telegram `getFile` 失败时带退避重试（200ms / 400ms）
+- 路由归一化，`/upload/` 不再落到图片分支
+- 图片缓存键去掉 query 参数
+- JSON 响应加 `no-store`
+- 修复管理页删除当前页全部内容后残留空页的问题
+- 修复缓存列表顺序被永久修改的问题
+- 修复上传成功提示被清除的问题
+- 修复同一文件二次选择不触发上传的问题
+- 拖拽高亮不再因光标进入子元素而闪烁
+- 支持一次粘贴多个文件
+- 顶层异常统一返回 JSON
+
 ### 2026-01-19
-- 使用Claude优化了一下代码
+- 使用 Claude 优化了一下代码
 
 ### 2025-08-24
-- 修复cdn.bytedance.com下线导致的页面加载异常的问题
+- 修复 cdn.bytedance.com 下线导致的页面加载异常的问题
 
 ### 2025-08-07
 - 修复主页背景图片无法加载的问题
@@ -60,7 +79,7 @@
 
 ### 2024-12-13
 - 通过哈希校验来避免重复上传。
-- 调整压缩率为0.75，同时去除分辨率限制。
+- 调整压缩率为 0.75，同时去除分辨率限制。
 - 给删除接口 `/delete-images` 添加了认证检查。
 
 ### 2024-11-29
@@ -72,45 +91,44 @@
 #### 首页
 - 修复粘贴上传时不显示移除按钮的问题
 
-### 2024-11-21日
+### 2024-11-21
 - 优化上传体验，默认开启压缩，加快文件上传速度
-  - 如需关闭，请将代码的238行修改为```enableCompression: false```
 
 ### 2024-11-01
 - 修复上传后无法加载的问题
 
 ### 2024-10-19
-- 修复webp无法上传的BUG
-- 优化数据库结构，[查看迁移教程](https://github.com/0-RTT/telegraph/releases/tag/v2.0)
+- 修复 webp 无法上传的 BUG
+- 优化数据库结构
 
 ### 2024-09-29
 - 优化缓存功能，采用 Cloudflare Cache API 缓存支持
 
 ### 2024-09-25
-- 修复GIF文件上传的问题，感谢 [nodeseek](https://www.nodeseek.com/) 用户 [@Libs](https://www.nodeseek.com/space/7214#/general) 提供的思路
-- Telegraph接口移到了telegraph分支，main分支为TG_BOT接口，可以通过直接fork仓库部署到pages
+- 修复 GIF 文件上传的问题
+- Telegraph 接口移到了 telegraph 分支，main 分支为 TG_BOT 接口，可以通过直接 fork 仓库部署到 pages
 
 ### 2024-09-23
 - 修复链接失效的问题，支持视频文件上传
 
 ### 2024-09-14
-- Telegraph接口上传的文件有**时效性**，建议使用TG_BOT上传
+- Telegraph 接口上传的文件有**时效性**，建议使用 TG_BOT 上传
 
 ### 2024-09-13
-- 支持通过TG_BOT上传到频道
-
-### 2024-09-12
-- 已修复，可正常上传到telegraph
+- 支持通过 TG_BOT 上传到频道
 
 ### 2024-09-06
-> ~~2024年9月6日起 telegra.ph 禁止了上传媒体文件，此项目终结。~~
+> ~~2024 年 9 月 6 日起 telegra.ph 禁止了上传媒体文件，此项目终结。~~
 
 </details>
 
-## 部署步骤
+## 部署
 
-### 1. 变量说明
-需要在 Cloudflare Workers 中配置以下环境变量:
+> ⚠️ 虽然项目使用了 Worker 的缓存 API，但仍建议配置好 **边缘 TTL** 并开启 **访客验证**，防止被刷导致扣费。
+
+### 环境变量
+
+在 Cloudflare Workers 中配置以下变量:
 
 | 变量名 | 说明 | 必填 | 示例 |
 |--------|------|------|------|
@@ -121,34 +139,17 @@
 | USERNAME | 管理员用户名 | 是 | admin |
 | PASSWORD | 管理员密码 | 是 | password123 |
 | ADMIN_PATH | 管理后台路径 | 是 | admin |
-| ENABLE_AUTH | 访客验证（设置为 true 开启，不设置或设置为 false 则关闭） | 否 | false |
-| MAX_SIZE_MB | 单文件最大支持大小（单位：MB，默认值为 20） | 否 | 20 |
+| ENABLE_AUTH | 访客验证（`true` 开启，不设置或 `false` 关闭） | 否 | false |
+| MAX_SIZE_MB | 单文件最大支持大小（单位：MB，默认 20） | 否 | 20 |
 
-### 2. 创建 Telegram Bot
-1. 在 Telegram 中找到 [@BotFather](https://t.me/BotFather)
-2. 发送 `/newbot` 命令创建新机器人
-3. 按照提示设置机器人名和用户名
-4. 保存获得的 Bot Token (格式为`123456789:ABCdefGHIjklMNOpqrsTUVwxyz`)
-   - 这个 Token 将用作环境变量 `TG_BOT_TOKEN`
+### 绑定说明
 
-### 3. 创建 Telegram 频道或群组
-1. 创建一个新的频道或群组
-2. 将你的 Bot 添加为管理员
-3. 获取频道/群组 ID：
-   - 发送频道内的任意消息给 [@getidsbot](https://t.me/getidsbot)
-   - 在 Origin chat 下找到对应的 ID (格式为 `-100xxxxxxxxxx`)
-   - 这个 ID 将用作环境变量 `TG_CHAT_ID`
+- **D1 数据库**：绑定变量名需与 `DATABASE` 环境变量一致
 
-### 4. 创建 D1 数据库
-1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com)
-2. 进入 `Workers & Pages` → `D1 SQL 数据库`
-3. 点击 `创建` 创建数据库
-   - 数据库名称可自定义，例如`images`
-   - 建议选择数据库位置为 `亚太地区`，可以获得更好的访问速度
-4. 创建数据表:
-   - 点击数据库名称进入详情页
-   - 选择 `控制台` 标签
-   - 执行下 SQL 语句:
+### 数据库结构
+
+需要一张 `media` 表，含两列:
+
 ```sql
 CREATE TABLE media (
     url TEXT PRIMARY KEY,
@@ -156,44 +157,47 @@ CREATE TABLE media (
 );
 ```
 
-### 5. 创建 Worker
-1. 进入 `Workers & Pages`
-2. 点击 `创建`
-3. 选择 `创建 Worker`
-4. 为 Worker 设置一个名称
-5. 点击 `部署` 创建 Worker
-6. 点击继续处理项目
+如果已有旧表只有 `url` 一列，执行:
 
-### 6. 配置变量和机密
-1. 在 Worker 的 `设置` → `变量和机密` 中
-2. 根据需要逐个点击 `添加` 添加以下变量
-   - DOMAIN
-   - TG_BOT_TOKEN
-   - TG_CHAT_ID
-   - USERNAME
-   - PASSWORD
-   - ADMIN_PATH
-   - ENABLE_AUTH（可选）
-   - MAX_SIZE_MB（可选）
-3. 点击 `部署`
+```sql
+ALTER TABLE media ADD COLUMN fileId TEXT;
+```
 
-### 7. 绑定数据库
-1. 在 Worker 设置页面找到 `设置` → `绑定`
-2. 点击 `添加` 添加以下变量名称
-   - DATABASE
-3. 点击 `部署`
+### 部署流程
 
-### 8. 绑定域名
-1. 在 Worker 的 `设置` → `域和路由`
-2. 点击 `添加` → `自定义域`
-3. 输入你在Cloudflare绑定的域名
-4. 点击 `添加域`
-5. 等待域名生效
+1. 创建 Telegram Bot，保存 Bot Token
+2. 创建 Telegram 频道或群组，将 Bot 设为管理员，获取 Chat ID
+3. 创建 D1 数据库（建议选择 `亚太地区` 以获得更好速度），并建好 `media` 表
+4. 创建 Worker，绑定上述 D1 数据库
+5. 配置环境变量
+6. 将 `_worker.js` 代码粘贴到 Worker 编辑器中并部署
+7. 为 Worker 绑定自定义域名
+8. （推荐）为自定义域名配置 Cache Rules，边缘 TTL 设置为 30 天或按需调整
 
-### 9. 部署代码
-1. 进入你的worker项目 → 点击编辑代码
-2. 将 `_worker.js` 的完整代码复制粘贴到编辑器中
-3. 点击 `部署`
+### 上传格式说明
+
+支持的扩展名（服务端白名单，非白名单文件将被拒绝）：
+
+- **图片**：`jpg` `jpeg` `png` `gif` `webp` `bmp` `svg`
+- **视频**：`mp4` `avi` `mov` `webm`
+
+> SVG 会以附件形式返回，避免在浏览器中直接执行其中的脚本。
+>
+> GIF 上传时会改名为 `.jpeg` 并以 `image/jpeg` 类型发送到 Telegram，URL 仍以 `.gif` 结尾（这是为了解决 Telegram 对 GIF 的处理限制，属预期行为）。
+
+### 压缩说明
+
+- 前端压缩默认开启，可点击主页右上角按钮切换
+- 压缩仅对图片生效（GIF 除外），压缩后统一转为 JPEG
+- 压缩后文件名扩展名会自动改为 `.jpg`，保证内容、文件名和 MIME 一致
+- 如不希望压缩影响画质（如透明 PNG 会丢失透明通道），可在首页关闭压缩
+
+### 已知限制
+
+- **视频不支持拖动进度条**：Telegram API 不返回 Range 数据，Worker 无法代理 Range 请求，因此视频只能从头播放。
+- **删除只删 D1 记录和 CDN 缓存**：Telegram 端的文件依然存在（Bot 无删除权限），但不会再从本站访问到。
+- **首次访问有延迟**：每个 URL 在 CDN 冷启动时需要两次 Telegram API 调用（`getFile` + 下载文件），大约多 0.5~1 秒。命中 CDN 后恢复正常速度。
+- **受 Telegram 文件大小限制**：Bot API 下载文件上限为 20MB，请勿将 `MAX_SIZE_MB` 设置超过此值。
 
 ## 开源协议
 
