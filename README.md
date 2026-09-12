@@ -148,19 +148,13 @@
 
 ### 数据库结构
 
-需要一张 `media` 表，含两列:
+需要一张 `media` 表:
 
 ```sql
 CREATE TABLE media (
     url TEXT PRIMARY KEY,
     fileId TEXT NOT NULL
 );
-```
-
-如果已有旧表只有 `url` 一列，执行:
-
-```sql
-ALTER TABLE media ADD COLUMN fileId TEXT;
 ```
 
 ### 部署流程
